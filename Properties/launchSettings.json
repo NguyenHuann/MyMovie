@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MyMovie (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MyMovie (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,0 +1,63 @@
+<Page
+    x:Class="MyMovie.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:MyMovie.Models"
+    mc:Ignorable="d">
+
+    <Grid>
+        <StackPanel x:Name="EmptyState" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    Visibility="Collapsed" Spacing="10">
+            <FontIcon Glyph="&#xE714;" FontSize="48" Opacity="0.5"/>
+            <TextBlock Text="Thư viện của bạn đang trống" Opacity="0.7"/>
+            <Button Content="Thêm phim ngay" Click="AddMovie_Click" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <GridView x:Name="MovieGrid"
+                  ItemsSource="{x:Bind Movies}"
+                  Padding="0,0,0,80" 
+                  SelectionMode="None"
+                  IsItemClickEnabled="True"
+                  ItemClick="MovieGrid_ItemClick">
+
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="-1"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="models:Movie">
+                    <Grid Width="180" Margin="0,0,16,16" Background="Transparent">
+                        <StackPanel Spacing="8">
+                            <Border CornerRadius="8" Height="260" Width="180">
+                                <Image Source="{x:Bind ThumbnailPath}" Stretch="UniformToFill"/>
+                            </Border>
+                            <TextBlock Text="{x:Bind Title}" 
+                                       FontWeight="SemiBold" 
+                                       TextTrimming="CharacterEllipsis" 
+                                       MaxLines="2"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+
+        <Button HorizontalAlignment="Right" 
+                VerticalAlignment="Bottom" 
+                Margin="32" Width="64" Height="64" 
+                CornerRadius="32"
+                Style="{StaticResource AccentButtonStyle}"
+                Click="AddMovie_Click"
+                ToolTipService.ToolTip="Thêm phim mới">
+            <FontIcon Glyph="&#xE710;" FontSize="24"/>
+            <Button.Shadow>
+                <ThemeShadow />
+            </Button.Shadow>
+        </Button>
+    </Grid>
+</Page>
