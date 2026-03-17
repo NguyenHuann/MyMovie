@@ -26,6 +26,7 @@ namespace MyMovie
         public MainWindow()
         {
             InitializeComponent();
+            this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
         }
     }
 }

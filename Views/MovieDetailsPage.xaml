@@ -9,13 +9,13 @@
 
     <Grid Padding="40">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="245"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
 
 
-        <Border Grid.Column="0" CornerRadius="12" Height="500" VerticalAlignment="Top" 
+        <Border Grid.Column="0" CornerRadius="12" Height="350" VerticalAlignment="Top" 
                 Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
             <Image Source="{x:Bind SelectedMovie.ThumbnailPath, Mode=OneWay}" 
                    Stretch="UniformToFill"/>

@@ -2,62 +2,110 @@
     x:Class="MyMovie.Views.AddMoviePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    Background="Transparent">
 
-    <ScrollViewer Padding="40">
-        <StackPanel Spacing="20" MaxWidth="600" HorizontalAlignment="Left">
-            <TextBlock Text="Thêm phim mới" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,10"/>
+    <Page.Resources>
+        <AcrylicBrush x:Key="CardAcrylic"
+                  TintColor="#1E1E1E" 
+                  TintOpacity="0.8"
+                  FallbackColor="#2D2D2D"/>
+    </Page.Resources>
 
-            <TextBox x:Name="TitleInput" Header="Tên phim" PlaceholderText="Nhập tên phim..."/>
-            <TextBox x:Name="DirectorInput" Header="Đạo diễn" PlaceholderText="Nhập tên đạo diễn..."/>
+    <ScrollViewer>
+        <StackPanel Padding="40" Spacing="30" MaxWidth="2000" HorizontalAlignment="Center">
 
-            <ComboBox x:Name="GenreInput" Header="Thể loại" HorizontalAlignment="Stretch" PlaceholderText="Chọn thể loại">
-                <ComboBoxItem Content="Hành động"/>
-                <ComboBoxItem Content="Tình cảm"/>
-                <ComboBoxItem Content="Viễn tưởng"/>
-                <ComboBoxItem Content="Kinh dị"/>
-                <ComboBoxItem Content="Hài hước"/>
-                <ComboBoxItem Content="Hình sự"/>
-                <ComboBoxItem Content="Hoạt hình"/>
-                <ComboBoxItem Content="Võ thuật"/>
-                <ComboBoxItem Content="Học đường"/>
-            </ComboBox>
-
-            <TextBox x:Name="DescInput" Header="Mô tả phim" PlaceholderText="Nhập tóm tắt nội dung..." 
-                     AcceptsReturn="True" Height="100" TextWrapping="Wrap"/>
-
-            <MenuFlyoutSeparator/>
-
-            <StackPanel Spacing="10">
-                <TextBlock Text="Đường dẫn phim và Ảnh bìa" FontWeight="SemiBold"/>
-
-                <Grid ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="VideoPathDisplay" IsReadOnly="True" PlaceholderText="Chưa chọn tệp video..."/>
-                    <Button Grid.Column="1" Content="Chọn Video" Click="PickVideo_Click" Style="{StaticResource AccentButtonStyle}"/>
-                </Grid>
-
-                <Grid ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="PosterPathDisplay" IsReadOnly="True" PlaceholderText="Chưa chọn ảnh bìa..."/>
-                    <Button Grid.Column="1" Content="Chọn Ảnh" Click="PickPoster_Click"/>
-                </Grid>
-
-                <Image x:Name="PosterPreview" Height="200" HorizontalAlignment="Left" Visibility="Collapsed" Margin="0,10,0,0"/>
+            <StackPanel Spacing="5" HorizontalAlignment="Left">
+                <TextBlock Text="Thêm phim mới" FontSize="32" FontWeight="Bold"/>
+                <TextBlock Text="Cập nhật bộ phim yêu thích của bạn vào thư viện cá nhân." Opacity="0.5"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
-                <Button Content="Lưu phim" Click="SaveMovie_Click" Width="150" Style="{StaticResource AccentButtonStyle}"/>
-                <Button Content="Hủy bỏ" Click="Cancel_Click" Width="100"/>
-            </StackPanel>
+            <Grid ColumnDefinitions="500, 300" ColumnSpacing="40">
+                <StackPanel Grid.Column="0" Spacing="20">
+                    <Border Background="{StaticResource CardAcrylic}" 
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Height="500">
+                        <Grid>
+                            <Button Click="PickPoster_Click"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Stretch" 
+                                    VerticalAlignment="Stretch">
+                                <StackPanel Spacing="10" VerticalAlignment="Center">
+                                    <FontIcon Glyph="&#xE722;" FontSize="28" Opacity="0.4"/>
+                                    <TextBlock Text="Tải lên ảnh bìa phim" HorizontalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </Button>
+                            <Border CornerRadius="16">
+                                <Image x:Name="PosterPreview" Stretch="UniformToFill" Visibility="Collapsed"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <TextBlock x:Name="PosterPathDisplay" FontSize="10" Opacity="0.3" TextWrapping="Wrap"/>
+
+                    <Button Click="PickVideo_Click" Height="60" CornerRadius="10" HorizontalAlignment="Stretch">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE714;"/>
+                            <TextBlock Text="Chọn tệp phim (.mp4, .mkv)"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock x:Name="VideoPathDisplay" FontSize="10" Opacity="0.3" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Background="{StaticResource CardAcrylic}"
+                        Padding="30"
+                        CornerRadius="16"
+                        VerticalAlignment="Top">
+
+                    <StackPanel Spacing="20">
+                        <TextBox x:Name="TitleInput"
+                                 Header="Tên phim"
+                                 PlaceholderText="Nhập tên phim..."
+                                 PlaceholderForeground="#66FFFFFF"/>
+
+                        <TextBox x:Name="DirectorInput"
+                                 Header="Đạo diễn"
+                                 PlaceholderText="Nhập tên đạo diễn..."
+                                 PlaceholderForeground="#66FFFFFF"/>
+
+                        <ComboBox x:Name="GenreInput" Header="Thể loại" HorizontalAlignment="Stretch" SelectedIndex="0">
+                            <ComboBoxItem Content="Hành động"/>
+                            <ComboBoxItem Content="Tình cảm"/>
+                            <ComboBoxItem Content="Viễn tưởng"/>
+                            <ComboBoxItem Content="Kinh dị"/>
+                            <ComboBoxItem Content="Võ thuật"/>
+                            <ComboBoxItem Content="Hoạt hình"/>
+                            <ComboBoxItem Content="Học đường"/>
+                            <ComboBoxItem Content="Kì ảo"/>
+                        </ComboBox>
+
+                        <TextBox x:Name="DescInput"
+                                 Header="Mô tả phim"
+                                 AcceptsReturn="True"
+                                 Height="150"
+                                 TextWrapping="Wrap"
+                                 PlaceholderText="Kể câu chuyện về bộ phim này..."
+                                 PlaceholderForeground="#66FFFFFF"/>
+
+                        <Button Content="Lưu phim"
+                                Click="SaveMovie_Click"
+                                Height="50"
+                                CornerRadius="25"
+                                HorizontalAlignment="Stretch"
+                                Style="{StaticResource AccentButtonStyle}"/>
+
+                        <Button Content="Hủy bỏ"
+                                Click="Cancel_Click"
+                                CornerRadius="25"
+                                Height="50"
+                                HorizontalAlignment="Stretch"
+                                BorderThickness="0"
+                                Opacity="0.6"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </Page>

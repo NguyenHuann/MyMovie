@@ -27,6 +27,7 @@ namespace MyMovie.Views
 
             // Lấy Window Handle để Picker hiển thị đúng lớp trên WinUI 3
             var hWnd = WindowNative.GetWindowHandle(App.m_window);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             InitializeWithWindow.Initialize(picker, hWnd);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
@@ -56,6 +57,7 @@ namespace MyMovie.Views
         {
             FileOpenPicker picker = new FileOpenPicker();
             var hWnd = WindowNative.GetWindowHandle(App.m_window);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             InitializeWithWindow.Initialize(picker, hWnd);
 
             picker.FileTypeFilter.Add(".jpg");
