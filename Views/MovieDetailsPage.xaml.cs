@@ -9,8 +9,8 @@ namespace MyMovie.Views
     public sealed partial class MovieDetailsPage : Page, INotifyPropertyChanged
     {
         // Đối tượng phim đang được chọn
-        private Movie _selectedMovie;
-        public Movie SelectedMovie
+        private Movie? _selectedMovie;
+        public Movie? SelectedMovie
         {
             get => _selectedMovie;
             set

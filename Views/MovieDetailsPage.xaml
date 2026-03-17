@@ -20,7 +20,7 @@
         </Button>
 
         <Border Grid.Column="0" CornerRadius="12" Height="500" VerticalAlignment="Top" 
-                Background="{ThemeResource LayerFillColorSecondaryBrush}">
+                Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
             <Image Source="{x:Bind SelectedMovie.ThumbnailPath, Mode=OneWay}" 
                    Stretch="UniformToFill"/>
         </Border>
