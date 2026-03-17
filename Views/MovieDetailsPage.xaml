@@ -13,11 +13,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Button Click="Back_Click" VerticalAlignment="Top" HorizontalAlignment="Left" 
-                Canvas.ZIndex="1" Margin="-20,-20,0,0" Background="Transparent"
-                ToolTipService.ToolTip="Quay lại">
-            <FontIcon Glyph="&#xE72B;"/>
-        </Button>
+
 
         <Border Grid.Column="0" CornerRadius="12" Height="500" VerticalAlignment="Top" 
                 Background="{ThemeResource SystemControlBackgroundAltHighBrush}">

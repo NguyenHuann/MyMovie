@@ -9,26 +9,26 @@
 
     <Grid>
         <NavigationView x:Name="NavView" 
-                PaneDisplayMode="LeftCompact"
-                IsSettingsVisible="False"
-                IsBackButtonVisible="Visible" 
-                BackRequested="NavView_BackRequested"
-                SelectionChanged="NavView_SelectionChanged">
+                        PaneDisplayMode="LeftCompact"
+                        IsSettingsVisible="False"
+                        IsBackButtonVisible="Visible" 
+                        BackRequested="NavView_BackRequested"
+                        SelectionChanged="NavView_SelectionChanged">
 
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Home" Tag="home">
+                <NavigationViewItem Content="Trang chủ" Tag="home">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE80F;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Favorites" Tag="favorites">
+                <NavigationViewItem Content="Yêu thích" Tag="favorites">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEB51;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="History" Tag="history">
+                <NavigationViewItem Content="Lịch sử" Tag="history">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;"/>
                     </NavigationViewItem.Icon>
@@ -36,7 +36,7 @@
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="Setting" Tag="settings">
+                <NavigationViewItem Content="Cài đặt" Tag="settings">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;"/>
                     </NavigationViewItem.Icon>
@@ -49,25 +49,28 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <RelativePanel Grid.Row="0" Margin="0,0,0,30">
+                <RelativePanel x:Name="HeaderPanel" Grid.Row="0" Margin="0,0,0,30">
                     <TextBlock x:Name="GreetingText" 
-                               Text="morning, user!" 
-                               FontSize="20"
+                               Text="đang tải..." 
+                               FontSize="28"
+                               FontWeight="SemiBold"
                                Style="{StaticResource TitleLargeTextBlockStyle}"/>
 
                     <StackPanel Orientation="Horizontal" 
                                 RelativePanel.AlignRightWithPanel="True" 
                                 Spacing="10">
-                        <Button Width="40" Height="40" Background="Transparent" ToolTipService.ToolTip="Search">
+                        <Button Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Tìm kiếm">
                             <FontIcon Glyph="&#xE721;" FontSize="16"/>
                         </Button>
-                        <Button Width="40" Height="40" Background="Transparent" ToolTipService.ToolTip="Sort">
+                        <Button Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Sắp xếp">
                             <FontIcon Glyph="&#xE8CB;" FontSize="16"/>
                         </Button>
                     </StackPanel>
                 </RelativePanel>
 
-                <Frame x:Name="ContentFrame" Grid.Row="1"/>
+                <Frame x:Name="ContentFrame" 
+                       Grid.Row="1" 
+                       Navigated="ContentFrame_Navigated"/>
             </Grid>
         </NavigationView>
     </Grid>

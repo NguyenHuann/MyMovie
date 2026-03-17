@@ -1,8 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Linq;
 using Windows.Storage;
-using Windows.UI.ApplicationSettings;
 using CommunityToolkit.Mvvm.Messaging;
 using MyMovie.Models;
 
@@ -13,101 +14,104 @@ namespace MyMovie.Views
         public MainPage()
         {
             this.InitializeComponent();
-            string currentUserName = Windows.Storage.ApplicationData.Current.LocalSettings.Values["UserName"] as string ?? "user";
-            UpdateGreeting(currentUserName);
 
-            // Cập nhật tức thì khi người dùng đổi tên ở trang Settings
+            // 1. Khởi tạo câu chào ban đầu
+            UpdateGreeting();
+
+            // 2. Lắng nghe thông báo đổi tên từ trang Settings
             WeakReferenceMessenger.Default.Register<UsernameChangedMessage>(this, (r, m) =>
             {
-                // Sử dụng hàm UpdateGreeting để đảm bảo tính đúng đắn về thời gian
                 UpdateGreeting(m.Value);
             });
 
-            // Cập nhật câu chào khi trang vừa tải xong
+            // 3. Thiết lập khi trang nạp xong
             this.Loaded += (s, e) => {
-                UpdateGreeting();
-                // Mặc định điều hướng vào trang Home khi mở app
-                NavView.SelectedItem = NavView.MenuItems[0];
+                // Mặc định mở trang Home nếu chưa có trang nào trong Frame
+                if (ContentFrame.Content == null)
+                {
+                    NavView.SelectedItem = NavView.MenuItems[0];
+                    ContentFrame.Navigate(typeof(HomePage));
+                }
             };
         }
 
-        /// <summary>
-        /// Cập nhật câu chào cá nhân hóa dựa trên thời gian và tên người dùng
-        /// </summary>
+        #region Logic Lời chào (Greeting)
+
+        private void UpdateGreeting(string? userName = null)
+        {
+            // Nếu không truyền tên, lấy từ LocalSettings
+            if (string.IsNullOrEmpty(userName))
+            {
+                userName = ApplicationData.Current.LocalSettings.Values["UserName"]?.ToString() ?? "user";
+            }
+
+            string timeGreeting = GetTimeBasedGreeting();
+            GreetingText.Text = $"{timeGreeting}, {userName}!";
+        }
+
+        private string GetTimeBasedGreeting()
+        {
+            int hour = DateTime.Now.Hour;
+            if (hour >= 5 && hour < 12) return "morning";
+            if (hour >= 12 && hour < 18) return "afternoon";
+            return "evening";
+        }
+
+        #endregion
+
+        #region Điều hướng (Navigation)
+
+        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.IsSettingsSelected)
+            {
+                ContentFrame.Navigate(typeof(SettingsPage));
+            }
+            else if (args.SelectedItemContainer != null)
+            {
+                string tag = args.SelectedItemContainer.Tag.ToString()!;
+                Type pageType = tag switch
+                {
+                    "home" => typeof(HomePage),
+                    "favorites" => typeof(FavoritesPage),
+                    "history" => typeof(HistoryPage),
+                    "settings" => typeof(SettingsPage),
+                    _ => typeof(HomePage)
+                };
+
+                if (ContentFrame.CurrentSourcePageType != pageType)
+                {
+                    ContentFrame.Navigate(pageType);
+                }
+            }
+        }
 
         private void NavView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
-            // Kiểm tra xem Frame có trang nào để quay lại không
             if (ContentFrame.CanGoBack)
             {
                 ContentFrame.GoBack();
             }
         }
-        private void UpdateGreeting()
+
+        // Sự kiện đồng bộ hóa sau khi điều hướng thành công
+        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
-            // Lấy tên người dùng từ LocalSettings (đã lưu từ trang Settings)
-            var settings = ApplicationData.Current.LocalSettings;
-            string userName = settings.Values["UserName"]?.ToString() ?? "user";
+            // Bật/Tắt nút Back dựa trên lịch sử duyệt trang
+            NavView.IsBackEnabled = ContentFrame.CanGoBack;
 
-            var hour = DateTime.Now.Hour;
-            string greetingPrefix = hour switch
+            // Tự động ẩn Header (Lời chào/Search) khi vào trang xem phim để rộng chỗ
+            if (e.SourcePageType.Name.Contains("PlayerPage"))
             {
-                < 12 => "morning",
-                < 18 => "afternoon",
-                _ => "evening"
-            };
-
-            // Kết quả hiển thị: "morning, user!"
-            GreetingText.Text = $"{greetingPrefix}, {userName}!";
-        }
-
-        /// <summary>
-        /// Xử lý điều hướng khi người dùng nhấn vào các mục trên Sidebar
-        /// </summary>
-        private void UpdateGreeting(string userName)
-        {
-            string timeGreeting = GetTimeBasedGreeting();
-            GreetingText.Text = $"{timeGreeting}, {userName}!";
-        }
-        private string GetTimeBasedGreeting()
-        {
-            int hour = DateTime.Now.Hour;
-
-            if (hour >= 5 && hour < 12)
-            {
-                return "morning"; // Từ 5h sáng đến trước 12h trưa
-            }
-            else if (hour >= 12 && hour < 18)
-            {
-                return "afternoon"; // Từ 12h trưa đến trước 6h chiều
+                HeaderPanel.Visibility = Visibility.Collapsed;
             }
             else
             {
-                return "evening"; // Từ 6h chiều đến 5h sáng hôm sau
+                HeaderPanel.Visibility = Visibility.Visible;
+                UpdateGreeting(); // Cập nhật lại lời chào mỗi khi quay lại trang chính
             }
         }
-        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            if (args.SelectedItemContainer != null)
-            {
-                string tag = args.SelectedItemContainer.Tag.ToString();
 
-                switch (tag)
-                {
-                    case "home":
-                        ContentFrame.Navigate(typeof(HomePage));
-                        break;
-                    case "favorites":
-                        ContentFrame.Navigate(typeof(FavoritesPage));
-                        break;
-                    case "history":
-                        ContentFrame.Navigate(typeof(HistoryPage));
-                        break; 
-                    case "settings":
-                        ContentFrame.Navigate(typeof(SettingsPage));
-                        break;
-                }
-            }
-        }
+        #endregion
     }
 }

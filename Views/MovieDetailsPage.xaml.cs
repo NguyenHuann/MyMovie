@@ -40,10 +40,6 @@ namespace MyMovie.Views
             }
         }
 
-        private void Back_Click(object sender, RoutedEventArgs e)
-        {
-            if (Frame.CanGoBack) Frame.GoBack();
-        }
 
         /// <summary>
         /// Chuyển sang trang PlayerPage và truyền đường dẫn video
