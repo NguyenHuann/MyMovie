@@ -14,11 +14,15 @@
             <TextBox x:Name="DirectorInput" Header="Đạo diễn" PlaceholderText="Nhập tên đạo diễn..."/>
 
             <ComboBox x:Name="GenreInput" Header="Thể loại" HorizontalAlignment="Stretch" PlaceholderText="Chọn thể loại">
-                <x:String>Hành động</x:String>
-                <x:String>Viễn tưởng</x:String>
-                <x:String>Kinh dị</x:String>
-                <x:String>Hài hước</x:String>
-                <x:String>Tình cảm</x:String>
+                <ComboBoxItem Content="Hành động"/>
+                <ComboBoxItem Content="Tình cảm"/>
+                <ComboBoxItem Content="Viễn tưởng"/>
+                <ComboBoxItem Content="Kinh dị"/>
+                <ComboBoxItem Content="Hài hước"/>
+                <ComboBoxItem Content="Hình sự"/>
+                <ComboBoxItem Content="Hoạt hình"/>
+                <ComboBoxItem Content="Võ thuật"/>
+                <ComboBoxItem Content="Học đường"/>
             </ComboBox>
 
             <TextBox x:Name="DescInput" Header="Mô tả phim" PlaceholderText="Nhập tóm tắt nội dung..." 

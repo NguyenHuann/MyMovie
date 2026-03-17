@@ -45,8 +45,8 @@ namespace MyMovie.Views
 
         private void AddMovie_Click(object sender, RoutedEventArgs e)
         {
-            // Điều hướng sang trang thêm phim 
             Frame.Navigate(typeof(AddMoviePage));
+            
         }
 
         private void MovieGrid_ItemClick(object sender, ItemClickEventArgs e)

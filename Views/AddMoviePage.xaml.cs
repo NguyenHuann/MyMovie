@@ -83,7 +83,7 @@ namespace MyMovie.Views
         /// </summary>
         private async void SaveMovie_Click(object sender, RoutedEventArgs e)
         {
-            // Kiểm tra các trường bắt buộc
+            // 1. Kiểm tra các trường bắt buộc
             if (string.IsNullOrWhiteSpace(TitleInput.Text) || string.IsNullOrWhiteSpace(VideoPathDisplay.Text))
             {
                 ShowErrorDialog("Vui lòng nhập tên phim và chọn tệp video.");
@@ -92,22 +92,29 @@ namespace MyMovie.Views
 
             try
             {
+                // 2. Tạo đối tượng phim mới với dữ liệu "sạch"
                 var newMovie = new Movie
                 {
                     Title = TitleInput.Text.Trim(),
-                    Director = DirectorInput.Text?.Trim(),
-                    Genre = (GenreInput.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? GenreInput.PlaceholderText,
-                    Description = DescInput.Text?.Trim(),
+                    Director = DirectorInput.Text?.Trim() ?? "Chưa rõ",
+
+                    // CẬP NHẬT: Lấy thể loại từ ComboBoxItem
+                    Genre = (GenreInput.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Chưa phân loại",
+
+                    Description = DescInput.Text?.Trim() ?? "",
                     VideoPath = VideoPathDisplay.Text,
-                    ThumbnailPath = PosterPathDisplay.Text,
+                    ThumbnailPath = PosterPathDisplay.Text ?? "", // Poster có thể trống
                     DateAdded = DateTime.Now
                 };
 
-                using var db = new AppDbContext();
-                db.Movies.Add(newMovie);
-                await db.SaveChangesAsync();
+                // 3. Lưu vào SQLite
+                using (var db = new AppDbContext())
+                {
+                    db.Movies.Add(newMovie);
+                    await db.SaveChangesAsync();
+                }
 
-                // Quay lại HomePage
+                // 4. Quay lại HomePage sau khi lưu thành công
                 if (Frame.CanGoBack) Frame.GoBack();
             }
             catch (Exception ex)

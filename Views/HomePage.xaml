@@ -8,14 +8,7 @@
     mc:Ignorable="d">
 
     <Grid>
-        <StackPanel x:Name="EmptyState" 
-                    VerticalAlignment="Center" 
-                    HorizontalAlignment="Center"
-                    Visibility="Collapsed" Spacing="10">
-            <FontIcon Glyph="&#xE714;" FontSize="48" Opacity="0.5"/>
-            <TextBlock Text="Thư viện của bạn đang trống" Opacity="0.7"/>
-            <Button Content="Thêm phim ngay" Click="AddMovie_Click" HorizontalAlignment="Center"/>
-        </StackPanel>
+
 
         <GridView x:Name="MovieGrid"
                   ItemsSource="{x:Bind Movies}"
@@ -46,6 +39,15 @@
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
+
+        <StackPanel x:Name="EmptyState" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    Visibility="Collapsed" Spacing="10">
+            <FontIcon Glyph="&#xE714;" FontSize="48" Opacity="0.5"/>
+            <TextBlock Text="Thư viện của bạn đang trống" Opacity="0.7"/>
+            <Button Content="Thêm phim ngay" Click="AddMovie_Click" HorizontalAlignment="Center"/>
+        </StackPanel>
 
         <Button HorizontalAlignment="Right" 
                 VerticalAlignment="Bottom" 
