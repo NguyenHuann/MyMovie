@@ -18,13 +18,16 @@ namespace MyMovie.Views
             // 1. Khởi tạo câu chào ban đầu
             UpdateGreeting();
 
-            // 2. Lắng nghe thông báo đổi tên từ trang Settings
+            // 2. Cài đặt Icon giao diện theo Theme hiện tại
+            InitializeThemeIcon();
+
+            // 3. Lắng nghe thông báo đổi tên từ trang Settings
             WeakReferenceMessenger.Default.Register<UsernameChangedMessage>(this, (r, m) =>
             {
                 UpdateGreeting(m.Value);
             });
 
-            // 3. Thiết lập khi trang nạp xong
+            // 4. Thiết lập khi trang nạp xong
             this.Loaded += (s, e) => {
                 // Mặc định mở trang Home nếu chưa có trang nào trong Frame
                 if (ContentFrame.Content == null)
@@ -35,11 +38,96 @@ namespace MyMovie.Views
             };
         }
 
+        #region Các nút trên Header (Giao diện, Tìm kiếm, Sắp xếp)
+
+        private void InitializeThemeIcon()
+        {
+            var savedTheme = ApplicationData.Current.LocalSettings.Values["AppTheme"]?.ToString();
+            if (savedTheme == "Light")
+            {
+                // Đang ở nền sáng -> Hiện mặt trăng gợi ý đổi sang tối
+                ThemeIcon.Glyph = "\xE708";
+            }
+            else
+            {
+                // Đang ở nền tối (hoặc mặc định) -> Hiện mặt trời gợi ý đổi sang sáng
+                ThemeIcon.Glyph = "\xE706";
+            }
+        }
+
+        private void ThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.m_window?.Content is FrameworkElement rootElement)
+            {
+                // Lấy theme hiện tại đang hiển thị
+                var currentTheme = rootElement.RequestedTheme;
+
+                // Kiểm tra xem đang ở nền Tối hay Sáng
+                var savedTheme = ApplicationData.Current.LocalSettings.Values["AppTheme"]?.ToString();
+                bool isCurrentlyDark = currentTheme == ElementTheme.Dark || (currentTheme == ElementTheme.Default && savedTheme != "Light");
+
+                if (isCurrentlyDark)
+                {
+                    // Nếu đang Tối -> Đổi sang Sáng
+                    rootElement.RequestedTheme = ElementTheme.Light;
+                    ApplicationData.Current.LocalSettings.Values["AppTheme"] = "Light";
+                    ThemeIcon.Glyph = "\xE708"; // Đổi icon thành Mặt trăng
+                }
+                else
+                {
+                    // Nếu đang Sáng -> Đổi sang Tối
+                    rootElement.RequestedTheme = ElementTheme.Dark;
+                    ApplicationData.Current.LocalSettings.Values["AppTheme"] = "Dark";
+                    ThemeIcon.Glyph = "\xE706"; // Đổi icon thành Mặt trời
+                }
+            }
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            GreetingText.Visibility = Visibility.Collapsed;
+            ThemeButton.Visibility = Visibility.Collapsed; // Ẩn nút Theme
+            SearchButton.Visibility = Visibility.Collapsed;
+            SortButton.Visibility = Visibility.Collapsed;
+
+            HeaderSearchBox.Visibility = Visibility.Visible;
+            CloseSearchButton.Visibility = Visibility.Visible;
+
+            HeaderSearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void CloseSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            HeaderSearchBox.Visibility = Visibility.Collapsed;
+            HeaderSearchBox.Text = string.Empty;
+            CloseSearchButton.Visibility = Visibility.Collapsed;
+
+            GreetingText.Visibility = Visibility.Visible;
+            ThemeButton.Visibility = Visibility.Visible; // Hiện lại nút Theme
+            SearchButton.Visibility = Visibility.Visible;
+            SortButton.Visibility = Visibility.Visible;
+        }
+
+        private void HeaderSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var keyword = sender.Text.ToLower();
+                // (Phần này sẽ dùng WeakReferenceMessenger để gửi từ khóa sang HomePage)
+            }
+        }
+
+        private void SortButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Logic Sắp xếp
+        }
+
+        #endregion
+
         #region Logic Lời chào (Greeting)
 
         private void UpdateGreeting(string? userName = null)
         {
-            // Nếu không truyền tên, lấy từ LocalSettings
             if (string.IsNullOrEmpty(userName))
             {
                 userName = ApplicationData.Current.LocalSettings.Values["UserName"]?.ToString() ?? "user";
@@ -94,13 +182,10 @@ namespace MyMovie.Views
             }
         }
 
-        // Sự kiện đồng bộ hóa sau khi điều hướng thành công
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
-            // Bật/Tắt nút Back dựa trên lịch sử duyệt trang
             NavView.IsBackEnabled = ContentFrame.CanGoBack;
 
-            // Tự động ẩn Header (Lời chào/Search) khi vào trang xem phim để rộng chỗ
             if (e.SourcePageType.Name.Contains("PlayerPage"))
             {
                 HeaderPanel.Visibility = Visibility.Collapsed;
@@ -108,7 +193,11 @@ namespace MyMovie.Views
             else
             {
                 HeaderPanel.Visibility = Visibility.Visible;
-                UpdateGreeting(); // Cập nhật lại lời chào mỗi khi quay lại trang chính
+                if (HeaderSearchBox.Visibility == Visibility.Visible)
+                {
+                    CloseSearchButton_Click(null!, null!);
+                }
+                UpdateGreeting();
             }
         }
 

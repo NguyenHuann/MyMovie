@@ -23,6 +23,7 @@ namespace MyMovie.Models
         public string? VideoPath { get; set; }
         public string? ThumbnailPath { get; set; }
         public DateTime DateAdded { get; set; }
+        public bool IsFavorite { get; set; } = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null) =>
