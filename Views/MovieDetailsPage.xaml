@@ -5,96 +5,93 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:MyMovie.Models"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="Transparent">
 
-    <Grid Padding="40">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Page.Resources>
+        <AcrylicBrush x:Key="DetailAcrylic" TintColor="#1E1E1E" TintOpacity="0.7" FallbackColor="#2D2D2D"/>
+    </Page.Resources>
 
-        <Button Click="Back_Click" VerticalAlignment="Top" HorizontalAlignment="Left" 
-                Canvas.ZIndex="1" Margin="-50,-50,0,0" Background="Transparent"
-                ToolTipService.ToolTip="Quay lại">
-            <FontIcon Glyph="&#xE72B;"/>
-        </Button>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 
-        <Border Grid.Column="0" CornerRadius="12" Height="500" VerticalAlignment="Top" 
-                Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
-            <Image Source="{x:Bind SelectedMovie.ThumbnailPath, Mode=OneWay}" 
-                   Stretch="UniformToFill"/>
-        </Border>
+        <StackPanel Padding="40" Spacing="30" MaxWidth="1200" HorizontalAlignment="Center">
 
-        <StackPanel Grid.Column="1" Margin="40,0,0,0" Spacing="3">
-            <TextBlock Text="{x:Bind SelectedMovie.Title, Mode=OneWay}" 
-                       Style="{StaticResource TitleLargeTextBlockStyle}" 
-                       FontSize="36" TextWrapping="Wrap"/>
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
-                <TextBlock Text="Đạo diễn: "
-                           Foreground="{ThemeResource SystemAccentColor}"
-                           FontWeight="Bold" FontSize="16"/>
-                <TextBlock Text="{x:Bind SelectedMovie.Director,Mode= OneWay}"
-                           FontSize="16" Opacity="0.9"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Thể loại:" 
-                   Foreground="{ThemeResource SystemAccentColor}" 
-                   FontWeight="Bold" FontSize="16"/>
-                <TextBlock Text="{x:Bind SelectedMovie.Genre, Mode=OneWay}" 
-                   FontSize="16" Opacity="0.7" FontStyle="Italic"/>
+            <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+                <Button Click="Back_Click" Background="Transparent" BorderThickness="0" Padding="8">
+                    <FontIcon Glyph="&#xE72B;" FontSize="20"/>
+                </Button>
+
             </StackPanel>
 
-            <TextBlock Text="Nội dung" FontWeight="Bold" Margin="0,20,0,0"/>
-            <Border Background="{ThemeResource SystemControlBackgroundAltMediumLowBrush}" 
-                    Padding="10" 
-                    CornerRadius="8">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                  MaxHeight="70" 
-                  Margin="0,5,0,0">
-                    <TextBlock Text="{x:Bind SelectedMovie.Description, Mode=OneWay}" 
-                   TextWrapping="Wrap" 
-                   Opacity="0.8" 
-                   LineHeight="24" 
-                   FontSize="15"
-                   HorizontalAlignment="Stretch"/>
-                </ScrollViewer>
-            </Border>
+            <Grid ColumnDefinitions="400, *" ColumnSpacing="50">
+                <StackPanel Grid.Column="0" Spacing="20">
+                    <Border CornerRadius="20" Background="{ThemeResource SystemControlBackgroundAltHighBrush}" 
+                            BorderBrush="#22FFFFFF" BorderThickness="1">
+                        <Image Source="{x:Bind SelectedMovie.ThumbnailPath, Mode=OneWay}" 
+                               Stretch="UniformToFill" Height="580"/>
+                    </Border>
+                </StackPanel>
 
-            <Button Content="XEM PHIM" 
-                    Click="PlayMovie_Click" 
-                    Style="{StaticResource AccentButtonStyle}" 
-                    Width="220" Height="50" 
-                    Margin="0,30,0,0"
-                    FontSize="18" FontWeight="Bold">
-                <Button.ContentTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <FontIcon Glyph="&#xE768;"/>
-                            <TextBlock Text="XEM PHIM"/>
+                <Border Grid.Column="1" Background="{StaticResource DetailAcrylic}" 
+                        Padding="35" CornerRadius="20" VerticalAlignment="Top">
+                    <StackPanel Spacing="25">
+                        <TextBlock Text="{x:Bind SelectedMovie.Title, Mode=OneWay}" 
+                           FontSize="36" FontWeight="Bold" TextWrapping="Wrap"/>
+
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Button Click="PlayMovie_Click" Style="{StaticResource AccentButtonStyle}" 
+                                    Padding="30,12" CornerRadius="25">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <FontIcon Glyph="&#xE768;"/>
+                                    <TextBlock Text="XEM PHIM" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="EditMovieButton" Click="EditMovie_Click" 
+                                    Background="#F2994A" Foreground="White" 
+                                    Padding="20,12" CornerRadius="25">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <FontIcon Glyph="&#xE70F;"/>
+                                    <TextBlock Text="Chỉnh sửa"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
-                    </DataTemplate>
-                </Button.ContentTemplate>
-            </Button>
+
+                        <MenuFlyoutSeparator Opacity="0.1"/>
+
+                        <StackPanel Spacing="8" Orientation="Horizontal">
+                            <TextBlock Text="ĐẠO DIỄN: " FontSize="12" FontWeight="Bold" Opacity="0.5" CharacterSpacing="100"/>
+                            <TextBlock Text="{x:Bind SelectedMovie.Director, Mode=OneWay}" FontSize="15"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8" Orientation="Horizontal">
+                            <TextBlock Text="THỂ LOẠI: " FontSize="12" FontWeight="Bold" Opacity="0.5" CharacterSpacing="100"/>
+                            <TextBlock Text="{x:Bind SelectedMovie.Genre, Mode=OneWay}" FontSize="15" FontStyle="Italic"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="NỘI DUNG" FontSize="12" FontWeight="Bold" Opacity="0.5" CharacterSpacing="100"/>
+
+                            <Border Background="#1AFFFFFF" 
+            Padding="15" 
+            CornerRadius="10" 
+            MaxHeight="150" 
+            BorderThickness="1" 
+            BorderBrush="#11FFFFFF">
+
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <TextBlock Text="{x:Bind SelectedMovie.Description, Mode=OneWay}" 
+                       TextWrapping="Wrap" 
+                       FontSize="16" 
+                       LineHeight="26" 
+                       Opacity="0.9"/>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
-        <StackPanel Grid.ColumnSpan="2"
-                    Orientation="Vertical" 
-                    VerticalAlignment="Bottom" 
-                    HorizontalAlignment="Right" 
-                    Margin="32,64,-30,-30" 
-                    Spacing="12">
-
-            <Button x:Name="EditMovieButton"
-                    Click="EditMovie_Click"
-                    Width="64" Height="64"
-                    CornerRadius="32"
-                    Background="#F2994A" 
-                    Foreground="White"
-                    ToolTipService.ToolTip="Sửa phim này">
-                <FontIcon Glyph="&#xE70F;" FontSize="18"/>
-            </Button>
-
-
-        </StackPanel>
-
-    </Grid>
+    </ScrollViewer>
 </Page>
