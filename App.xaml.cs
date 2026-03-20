@@ -36,7 +36,7 @@ namespace MyMovie
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // Tự động tạo Database nếu chưa có
-            using (var db = new MyMovie.Data.AppDbContext())
+            using (var db = new MyMovie.Data.AddDbContext())
             {
                 db.Database.EnsureCreated();
             }

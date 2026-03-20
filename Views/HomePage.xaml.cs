@@ -26,7 +26,7 @@ namespace MyMovie.Views
             Movies.Clear();
 
             // Kết nối SQLite để lấy dữ liệu phim 
-            using var db = new AppDbContext();
+            using var db = new AddDbContext();
             var movieList = await db.Movies.OrderByDescending(m => m.DateAdded).ToListAsync();
 
             if (!movieList.Any())
