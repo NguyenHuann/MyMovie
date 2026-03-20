@@ -59,11 +59,42 @@
                     <StackPanel Orientation="Horizontal" 
                                 RelativePanel.AlignRightWithPanel="True" 
                                 Spacing="10">
-                        <Button Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Tìm kiếm">
+
+                        <Button x:Name="ThemeButton" 
+                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
+                                ToolTipService.ToolTip="Đổi giao diện (Sáng/Tối)"
+                                Click="ThemeButton_Click">
+                            <FontIcon x:Name="ThemeIcon" Glyph="&#xE706;" FontSize="16"/>
+                        </Button>
+
+                        <Button x:Name="SearchButton" 
+                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
+                                ToolTipService.ToolTip="Tìm kiếm"
+                                Click="SearchButton_Click">
                             <FontIcon Glyph="&#xE721;" FontSize="16"/>
                         </Button>
-                        <Button Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Sắp xếp">
+
+                        <Button x:Name="SortButton" 
+                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
+                                ToolTipService.ToolTip="Sắp xếp"
+                                Click="SortButton_Click">
                             <FontIcon Glyph="&#xE8CB;" FontSize="16"/>
+                        </Button>
+
+                        <AutoSuggestBox x:Name="HeaderSearchBox" 
+                                        PlaceholderText="Tìm kiếm phim..." 
+                                        QueryIcon="Find" 
+                                        Width="300" 
+                                        VerticalAlignment="Center"
+                                        Visibility="Collapsed" 
+                                        TextChanged="HeaderSearchBox_TextChanged" />
+
+                        <Button x:Name="CloseSearchButton" 
+                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
+                                ToolTipService.ToolTip="Đóng tìm kiếm"
+                                Click="CloseSearchButton_Click" 
+                                Visibility="Collapsed">
+                            <FontIcon Glyph="&#xE711;" FontSize="12" />
                         </Button>
                     </StackPanel>
                 </RelativePanel>

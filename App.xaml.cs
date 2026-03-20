@@ -1,32 +1,14 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Windows.Storage;
 
 namespace MyMovie
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
-        public static Window m_window; // Lưu trữ Window để lấy Handle sau này
+        // Thêm dấu ? để sửa cảnh báo vàng CS8618 (cho phép biến rỗng lúc khởi tạo)
+        public static Window? m_window;
 
         public App()
         {
@@ -35,7 +17,7 @@ namespace MyMovie
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            // Tự động tạo Database nếu chưa có
+            // Trả lại đúng tên AddDbContext nguyên bản để sửa lỗi đỏ CS0234
             using (var db = new MyMovie.Data.AddDbContext())
             {
                 db.Database.EnsureCreated();
@@ -44,6 +26,23 @@ namespace MyMovie
             m_window = new Window();
             m_window.Content = new Views.MainPage();
             m_window.Title = "MyMovie";
+
+            // ĐỌC VÀ ÁP DỤNG THEME TRƯỚC KHI HIỂN THỊ CỬA SỔ
+            if (m_window.Content is FrameworkElement rootElement)
+            {
+                // Thêm dấu ? cho biến savedTheme để sửa cảnh báo vàng CS8600
+                string? savedTheme = ApplicationData.Current.LocalSettings.Values["AppTheme"] as string;
+
+                if (savedTheme == "Dark")
+                {
+                    rootElement.RequestedTheme = ElementTheme.Dark;
+                }
+                else if (savedTheme == "Light")
+                {
+                    rootElement.RequestedTheme = ElementTheme.Light;
+                }
+            }
+
             m_window.Activate();
         }
     }
