@@ -20,11 +20,19 @@
                 <MediaTransportControls IsCompact="False"
                                IsPlaybackRateButtonVisible="True"
                                IsPlaybackRateEnabled="True"
-                               IsZoomButtonVisible="True"
-                               IsZoomEnabled="True"/>
+                               IsSkipForwardButtonVisible="True"
+                               IsSkipForwardEnabled="True"
+                               IsSkipBackwardEnabled="True"
+                               IsSkipBackwardButtonVisible="True"
+                               IsZoomButtonVisible="False"
+                               IsZoomEnabled="False"
+                               IsRepeatButtonVisible="True"
+                               IsRepeatEnabled="True"
+                               IsSeekEnabled="True"
+                               ShowAndHideAutomatically="True"/>
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
-
+<!--
         <Button Click="Back_Click" 
                 VerticalAlignment="Top" 
                 HorizontalAlignment="Left" 
@@ -37,5 +45,6 @@
                 Canvas.ZIndex="1">
             <FontIcon Glyph="&#xE72B;" Foreground="White" FontSize="18"/>
         </Button>
+        -->
     </Grid>
 </Page>

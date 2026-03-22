@@ -14,14 +14,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Padding="40" Spacing="30" MaxWidth="1200" HorizontalAlignment="Center">
-
-            <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
-                <Button Click="Back_Click" Background="Transparent" BorderThickness="0" Padding="8">
-                    <FontIcon Glyph="&#xE72B;" FontSize="20"/>
-                </Button>
-
-            </StackPanel>
+        <StackPanel MaxWidth="1200" HorizontalAlignment="Center" VerticalAlignment="Top">
 
             <Grid ColumnDefinitions="400, *" ColumnSpacing="50">
                 <StackPanel Grid.Column="0" Spacing="20">
@@ -42,14 +35,17 @@
                             <Button Click="PlayMovie_Click" Style="{StaticResource AccentButtonStyle}" 
                                     Padding="30,12" CornerRadius="25">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <FontIcon Glyph="&#xE768;"/>
+                                    <FontIcon Glyph="&#xE768;" FontWeight="Bold"/>
                                     <TextBlock Text="XEM PHIM" FontWeight="Bold"/>
                                 </StackPanel>
                             </Button>
 
                             <Button x:Name="EditMovieButton" Click="EditMovie_Click" 
-                                    Background="#F2994A" Foreground="White" 
+                                    Background="#F2994A" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Padding="20,12" CornerRadius="25">
+                                <Button.Resources>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#B87438"/>
+                                </Button.Resources>
                                 <StackPanel Orientation="Horizontal" Spacing="10">
                                     <FontIcon Glyph="&#xE70F;"/>
                                     <TextBlock Text="Chỉnh sửa"/>
