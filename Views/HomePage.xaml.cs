@@ -95,6 +95,7 @@ namespace MyMovie.Views
                 db.Movies.Update(movie);
                 await db.SaveChangesAsync();
 
+               
                 if (btn.Content is FontIcon icon)
                 {
                     if (movie.IsFavorite)

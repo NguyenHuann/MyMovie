@@ -67,11 +67,11 @@
                                 Tag="{x:Bind}" 
                                 Click="FavoriteButton_Click"
                                 ToolTipService.ToolTip="Yêu thích">
-                                        <FontIcon Glyph="&#xEB51;" FontSize="16"/>
+                                        <FontIcon Glyph="&#xEB51;" 
+                                                  FontSize="16"
+                                                  Foreground="{x:Bind IsFavorite, Mode=OneWay, Converter={StaticResource FavoriteColorConverter}}"/>
                                         <Button.Resources>
-                                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#44FFFFFF"/>
-                                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Red"/>
-
+                                            
                                             <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#66FFFFFF"/>
                                         </Button.Resources>
                                     </Button>

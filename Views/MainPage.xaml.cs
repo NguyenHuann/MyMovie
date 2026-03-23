@@ -140,9 +140,9 @@ namespace MyMovie.Views
         private string GetTimeBasedGreeting()
         {
             int hour = DateTime.Now.Hour;
-            if (hour >= 5 && hour < 12) return "morning";
-            if (hour >= 12 && hour < 18) return "afternoon";
-            return "evening";
+            if (hour >= 5 && hour < 12) return "Morning";
+            if (hour >= 12 && hour < 18) return "Afternoon";
+            return "Evening";
         }
 
         #endregion

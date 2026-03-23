@@ -35,7 +35,7 @@
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Thông tin ứng dụng" FontWeight="Bold" FontSize="16"/>
-                        <TextBlock Text="Phiên bản: 1.0.0 (BETA)" Opacity="0.8"/>
+                        <TextBlock Text="Phiên bản: 10.0 (BETA)" Opacity="0.8"/>
                         <TextBlock Text="Nền tảng: .NET 8.0 + WinUI 3" Opacity="0.8"/>
                     </StackPanel>
                 </Border>
