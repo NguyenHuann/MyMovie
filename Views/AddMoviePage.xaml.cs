@@ -10,6 +10,7 @@ using Windows.Storage.Pickers;
 using WinRT.Interop;
 using MyMovie.Models;
 using MyMovie.Data;
+using System.Collections.Generic;
 
 namespace MyMovie.Views
 {
@@ -21,11 +22,11 @@ namespace MyMovie.Views
         public AddMoviePage()
         {
             this.InitializeComponent();
+            // Đổ dữ liệu từ danh sách string chung
+            GenreInput.ItemsSource = Constants.AllGenres;
+            GenreInput.SelectedIndex = 0;
         }
 
-        /// <summary>
-        /// Nhận dữ liệu phim và thiết lập giao diện (Thêm hoặc Sửa)
-        /// </summary>
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -34,43 +35,95 @@ namespace MyMovie.Views
             {
                 _editingMovie = movie;
 
-                // 1. Đổ dữ liệu vào các ô nhập liệu
                 TitleInput.Text = _editingMovie.Title ?? "";
                 DirectorInput.Text = _editingMovie.Director ?? "";
                 DescInput.Text = _editingMovie.Description ?? "";
                 VideoPathDisplay.Text = _editingMovie.VideoPath ?? "";
                 PosterPathDisplay.Text = _editingMovie.ThumbnailPath ?? "";
 
-                // 2. Chọn Thể loại an toàn trong ComboBox
+                // Chọn lại thể loại dựa trên chuỗi string
                 if (GenreInput != null && !string.IsNullOrEmpty(_editingMovie.Genre))
                 {
-                    GenreInput.SelectedItem = GenreInput.Items
-                        .OfType<ComboBoxItem>()
-                        .FirstOrDefault(x => x.Content?.ToString() == _editingMovie.Genre);
+                    GenreInput.SelectedItem = _editingMovie.Genre;
                 }
 
-                // 3. Nạp ảnh an toàn (Fix crash Win32)
                 if (!string.IsNullOrEmpty(_editingMovie.ThumbnailPath))
                 {
                     await LoadImageAsync(_editingMovie.ThumbnailPath);
                 }
 
-                // 4. Cập nhật Text giao diện cho chế độ Sửa
                 PageTitle.Text = "Chỉnh sửa phim";
                 SaveBtn.Content = "Cập nhật";
             }
         }
 
-        /// <summary>
-        /// Hàm nạp ảnh an toàn bằng Stream để tránh lỗi Crash "Win32 Unhandled Exception"
-        /// </summary>
-        private async Task LoadImageAsync(string filePath)
+        // --- HÀM XỬ LÝ LƯU (QUAN TRỌNG) ---
+        private async void SaveMovie_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(filePath)) return;
+            if (string.IsNullOrWhiteSpace(TitleInput.Text) || string.IsNullOrWhiteSpace(VideoPathDisplay.Text))
+            {
+                ShowErrorDialog("Vui lòng nhập tên phim và chọn tệp video.");
+                return;
+            }
 
             try
             {
-                // Kiểm tra file tồn tại trước khi nạp
+                using var db = new AddDbContext();
+                string selectedGenre = GenreInput.SelectedItem?.ToString() ?? "Chưa rõ";
+
+                if (_editingMovie != null)
+                {
+                    var movieInDb = db.Movies.FirstOrDefault(m => m.Id == _editingMovie.Id);
+                    if (movieInDb != null)
+                    {
+                        movieInDb.Title = TitleInput.Text.Trim();
+                        movieInDb.Director = DirectorInput.Text?.Trim();
+                        movieInDb.Genre = selectedGenre;
+                        movieInDb.Description = DescInput.Text?.Trim();
+                        movieInDb.VideoPath = VideoPathDisplay.Text;
+                        movieInDb.ThumbnailPath = PosterPathDisplay.Text;
+
+                        db.Movies.Update(movieInDb);
+
+                        _editingMovie.Title = movieInDb.Title;
+                        _editingMovie.Director = movieInDb.Director;
+                        _editingMovie.Genre = movieInDb.Genre;
+                        _editingMovie.Description = movieInDb.Description;
+                        _editingMovie.VideoPath = movieInDb.VideoPath;
+                        _editingMovie.ThumbnailPath = movieInDb.ThumbnailPath;
+                    }
+                }
+                else
+                {
+                    var newMovie = new Movie
+                    {
+                        Title = TitleInput.Text.Trim(),
+                        Director = DirectorInput.Text?.Trim(),
+                        Genre = selectedGenre,
+                        Description = DescInput.Text?.Trim(),
+                        VideoPath = VideoPathDisplay.Text,
+                        ThumbnailPath = PosterPathDisplay.Text,
+                        DateAdded = DateTime.Now
+                    };
+                    db.Movies.Add(newMovie);
+                }
+
+                await db.SaveChangesAsync();
+                Frame.GoBack();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog($"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+
+        // --- CÁC HÀM BỔ TRỢ (FIX LỖI CS0103) ---
+
+        private async Task LoadImageAsync(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return;
+            try
+            {
                 StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
                 using (var stream = await file.OpenAsync(FileAccessMode.Read))
                 {
@@ -78,22 +131,13 @@ namespace MyMovie.Views
                     await bitmap.SetSourceAsync(stream);
                     PosterPreview.Source = bitmap;
 
-                    // HIỆN ảnh và nút Đổi ảnh, ẨN icon hướng dẫn ban đầu
                     UploadPlaceholder.Visibility = Visibility.Collapsed;
                     ImageSelectedContent.Visibility = Visibility.Visible;
                 }
             }
-            catch (Exception)
-            {
-                // Nếu lỗi (file bị xóa/không truy cập được), hiện lại trạng thái chọn ảnh trống
-                UploadPlaceholder.Visibility = Visibility.Visible;
-                ImageSelectedContent.Visibility = Visibility.Collapsed;
-            }
+            catch { /* File lỗi hoặc không tồn tại */ }
         }
 
-        /// <summary>
-        /// Xử lý chọn Ảnh bìa (Poster)
-        /// </summary>
         private async void PickPoster_Click(object sender, RoutedEventArgs e)
         {
             FileOpenPicker picker = new FileOpenPicker();
@@ -108,13 +152,10 @@ namespace MyMovie.Views
             if (file != null)
             {
                 PosterPathDisplay.Text = file.Path;
-                await LoadImageAsync(file.Path); // Nạp và đổi trạng thái giao diện
+                await LoadImageAsync(file.Path);
             }
         }
 
-        /// <summary>
-        /// Xử lý chọn Video
-        /// </summary>
         private async void PickVideo_Click(object sender, RoutedEventArgs e)
         {
             FileOpenPicker picker = new FileOpenPicker();
@@ -133,73 +174,6 @@ namespace MyMovie.Views
             }
         }
 
-        /// <summary>
-        /// Xử lý Lưu hoặc Cập nhật vào SQLite
-        /// </summary>
-        private async void SaveMovie_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(TitleInput.Text) || string.IsNullOrWhiteSpace(VideoPathDisplay.Text))
-            {
-                ShowErrorDialog("Vui lòng nhập tên phim và chọn tệp video.");
-                return;
-            }
-
-            try
-            {
-                using var db = new AddDbContext(); // Đảm bảo đúng tên Class DbContext của bạn
-
-                if (_editingMovie != null)
-                {
-                    // CHẾ ĐỘ CẬP NHẬT
-                    var movieInDb = db.Movies.FirstOrDefault(m => m.Id == _editingMovie.Id);
-                    if (movieInDb != null)
-                    {
-                        movieInDb.Title = TitleInput.Text.Trim();
-                        movieInDb.Director = DirectorInput.Text?.Trim();
-                        movieInDb.Genre = (GenreInput.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Chưa rõ";
-                        movieInDb.Description = DescInput.Text?.Trim();
-                        movieInDb.VideoPath = VideoPathDisplay.Text;
-                        movieInDb.ThumbnailPath = PosterPathDisplay.Text;
-
-                        db.Movies.Update(movieInDb);
-
-                        // Đồng bộ lại object tham chiếu để các trang khác nhận thay đổi ngay
-                        _editingMovie.Title = movieInDb.Title;
-                        _editingMovie.Director = movieInDb.Director;
-                        _editingMovie.Genre = movieInDb.Genre;
-                        _editingMovie.Description = movieInDb.Description;
-                        _editingMovie.VideoPath = movieInDb.VideoPath;
-                        _editingMovie.ThumbnailPath = movieInDb.ThumbnailPath;
-                    }
-                }
-                else
-                {
-                    // CHẾ ĐỘ THÊM MỚI
-                    var newMovie = new Movie
-                    {
-                        Title = TitleInput.Text.Trim(),
-                        Director = DirectorInput.Text?.Trim(),
-                        Genre = (GenreInput.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Chưa rõ",
-                        Description = DescInput.Text?.Trim(),
-                        VideoPath = VideoPathDisplay.Text,
-                        ThumbnailPath = PosterPathDisplay.Text,
-                        DateAdded = DateTime.Now
-                    };
-                    db.Movies.Add(newMovie);
-                }
-
-                await db.SaveChangesAsync();
-                Frame.GoBack();
-            }
-            catch (Exception ex)
-            {
-                ShowErrorDialog($"Lỗi hệ thống: {ex.Message}");
-            }
-        }
-
-        private void Back_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
-        private void Cancel_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
-
         private async void ShowErrorDialog(string message)
         {
             ContentDialog dialog = new ContentDialog
@@ -211,5 +185,8 @@ namespace MyMovie.Views
             };
             await dialog.ShowAsync();
         }
+
+        private void Back_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
+        private void Cancel_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
     }
 }

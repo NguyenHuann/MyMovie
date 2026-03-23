@@ -76,15 +76,6 @@
                                  PlaceholderForeground="#66FFFFFF"/>
 
                         <ComboBox x:Name="GenreInput" Header="Thể loại" HorizontalAlignment="Stretch" SelectedIndex="0">
-                            <ComboBoxItem Content="Hành động"/>
-                            <ComboBoxItem Content="Tình cảm"/>
-                            <ComboBoxItem Content="Viễn tưởng"/>
-                            <ComboBoxItem Content="Kinh dị"/>
-                            <ComboBoxItem Content="Học đường"/>
-                            <ComboBoxItem Content="Hài kịch"/>
-                            <ComboBoxItem Content="Drama"/>
-                            <ComboBoxItem Content="Võ thuật"/>
-                            <ComboBoxItem Content="Kì ảo"/>
                         </ComboBox>
 
                         <TextBox x:Name="DescInput" Header="Mô tả phim" 
