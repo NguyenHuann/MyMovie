@@ -83,11 +83,17 @@
 
                         <AutoSuggestBox x:Name="HeaderSearchBox" 
                                         PlaceholderText="Tìm kiếm phim..." 
+                                        
                                         QueryIcon="Find" 
                                         Width="300" 
                                         VerticalAlignment="Center"
-                                        Visibility="Collapsed" 
-                                        TextChanged="HeaderSearchBox_TextChanged" />
+                                        Visibility="Visible" 
+                                        TextChanged="HeaderSearchBox_TextChanged">
+                            <AutoSuggestBox.Resources>
+                                <SolidColorBrush x:Key="TextControlPlaceholderForeground"
+                         Color="#FF888888"/>
+                            </AutoSuggestBox.Resources>
+                        </AutoSuggestBox>
 
                         <Button x:Name="CloseSearchButton" 
                                 Width="40" Height="40" CornerRadius="20" Background="Transparent" 
