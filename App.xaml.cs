@@ -7,7 +7,6 @@ namespace MyMovie
 {
     public partial class App : Application
     {
-        // Thêm dấu ? để sửa cảnh báo vàng CS8618 (cho phép biến rỗng lúc khởi tạo)
         public static Window? m_window;
 
         public App()
@@ -17,30 +16,28 @@ namespace MyMovie
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            // Trả lại đúng tên AddDbContext nguyên bản để sửa lỗi đỏ CS0234
+            // 1. Khởi tạo Database
             using (var db = new MyMovie.Data.AddDbContext())
             {
                 db.Database.EnsureCreated();
             }
 
-            m_window = new Window();
-            m_window.Content = new Views.MainPage();
+            // 2. PHẢI dùng MainWindow (nơi bạn viết code đặt Icon)
+            m_window = new MainWindow();
+
+            // 3. Thiết lập tiêu đề (Sẽ bị ghi đè nếu MainWindow có code riêng)
             m_window.Title = "MyMovie";
 
-            // ĐỌC VÀ ÁP DỤNG THEME TRƯỚC KHI HIỂN THỊ CỬA SỔ
+            // 4. Áp dụng Theme (Thực hiện trên Content của MainWindow)
             if (m_window.Content is FrameworkElement rootElement)
             {
-                // Thêm dấu ? cho biến savedTheme để sửa cảnh báo vàng CS8600
                 string? savedTheme = ApplicationData.Current.LocalSettings.Values["AppTheme"] as string;
+                rootElement.RequestedTheme = savedTheme switch
+                {
+                    "Dark" => ElementTheme.Dark,
+                    "Light" => ElementTheme.Light,
 
-                if (savedTheme == "Dark")
-                {
-                    rootElement.RequestedTheme = ElementTheme.Dark;
-                }
-                else if (savedTheme == "Light")
-                {
-                    rootElement.RequestedTheme = ElementTheme.Light;
-                }
+                };
             }
 
             m_window.Activate();
