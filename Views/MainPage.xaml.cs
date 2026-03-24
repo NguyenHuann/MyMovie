@@ -2,7 +2,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Linq;
 using Windows.Storage;
 using CommunityToolkit.Mvvm.Messaging;
 using MyMovie.Models;
@@ -14,19 +13,15 @@ namespace MyMovie.Views
         public MainPage()
         {
             this.InitializeComponent();
-
-            // 1. Khởi tạo câu chào ban đầu
             UpdateGreeting();
+            InitializeThemeIcon();
 
-            // 2. Lắng nghe thông báo đổi tên từ trang Settings
             WeakReferenceMessenger.Default.Register<UsernameChangedMessage>(this, (r, m) =>
             {
                 UpdateGreeting(m.Value);
             });
 
-            // 3. Thiết lập khi trang nạp xong
             this.Loaded += (s, e) => {
-                // Mặc định mở trang Home nếu chưa có trang nào trong Frame
                 if (ContentFrame.Content == null)
                 {
                     NavView.SelectedItem = NavView.MenuItems[0];
@@ -35,31 +30,89 @@ namespace MyMovie.Views
             };
         }
 
-        #region Logic Lời chào (Greeting)
+        private void InitializeThemeIcon()
+        {
+            var savedTheme = ApplicationData.Current.LocalSettings.Values["AppTheme"]?.ToString();
+            ThemeIcon.Glyph = (savedTheme == "Light") ? "\xE708" : "\xE706";
+        }
+
+        private void ThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.m_window?.Content is FrameworkElement rootElement)
+            {
+                if (rootElement.RequestedTheme == ElementTheme.Dark ||
+                   (rootElement.RequestedTheme == ElementTheme.Default && ApplicationData.Current.LocalSettings.Values["AppTheme"]?.ToString() != "Light"))
+                {
+                    rootElement.RequestedTheme = ElementTheme.Light;
+                    ApplicationData.Current.LocalSettings.Values["AppTheme"] = "Light";
+                    ThemeIcon.Glyph = "\xE708";
+                }
+                else
+                {
+                    rootElement.RequestedTheme = ElementTheme.Dark;
+                    ApplicationData.Current.LocalSettings.Values["AppTheme"] = "Dark";
+                    ThemeIcon.Glyph = "\xE706";
+                }
+            }
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            GreetingText.Visibility = Visibility.Collapsed;
+            ThemeButton.Visibility = Visibility.Collapsed;
+            SearchButton.Visibility = Visibility.Collapsed;
+            SortButton.Visibility = Visibility.Collapsed;
+
+            HeaderSearchBox.Visibility = Visibility.Visible;
+            CloseSearchButton.Visibility = Visibility.Visible;
+            HeaderSearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void CloseSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            HeaderSearchBox.Visibility = Visibility.Collapsed;
+            HeaderSearchBox.Text = string.Empty;
+            CloseSearchButton.Visibility = Visibility.Collapsed;
+
+            GreetingText.Visibility = Visibility.Visible;
+            ThemeButton.Visibility = Visibility.Visible;
+            SearchButton.Visibility = Visibility.Visible;
+            SortButton.Visibility = Visibility.Visible;
+
+            WeakReferenceMessenger.Default.Send(new SearchMessage(""));
+        }
+
+        private void HeaderSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                WeakReferenceMessenger.Default.Send(new SearchMessage(sender.Text.ToLower()));
+            }
+        }
+
+        private void SortButton_Click(object sender, RoutedEventArgs e)
+        {
+            var flyout = new MenuFlyout();
+
+            var sortByNameAsc = new MenuFlyoutItem { Text = "Tên phim (A đến Z)", Icon = new FontIcon { Glyph = "\xE74B" } };
+            sortByNameAsc.Click += (s, args) => WeakReferenceMessenger.Default.Send(new SortMessage("NameAsc"));
+
+            var sortByNameDesc = new MenuFlyoutItem { Text = "Tên phim (Z đến A)", Icon = new FontIcon { Glyph = "\xE74A" } };
+            sortByNameDesc.Click += (s, args) => WeakReferenceMessenger.Default.Send(new SortMessage("NameDesc"));
+
+            flyout.Items.Add(sortByNameAsc);
+            flyout.Items.Add(sortByNameDesc);
+
+            flyout.ShowAt((FrameworkElement)sender);
+        }
 
         private void UpdateGreeting(string? userName = null)
         {
-            // Nếu không truyền tên, lấy từ LocalSettings
-            if (string.IsNullOrEmpty(userName))
-            {
-                userName = ApplicationData.Current.LocalSettings.Values["UserName"]?.ToString() ?? "user";
-            }
-
-            string timeGreeting = GetTimeBasedGreeting();
-            GreetingText.Text = $"{timeGreeting}, {userName}!";
-        }
-
-        private string GetTimeBasedGreeting()
-        {
+            userName ??= ApplicationData.Current.LocalSettings.Values["UserName"]?.ToString() ?? "user";
             int hour = DateTime.Now.Hour;
-            if (hour >= 5 && hour < 12) return "morning";
-            if (hour >= 12 && hour < 18) return "afternoon";
-            return "evening";
+            string time = hour < 12 ? "Morning" : (hour < 18 ? "Afternoon" : "Evening");
+            GreetingText.Text = $"{time}, {userName}!";
         }
-
-        #endregion
-
-        #region Điều hướng (Navigation)
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -79,28 +132,32 @@ namespace MyMovie.Views
                     _ => typeof(HomePage)
                 };
 
-                if (ContentFrame.CurrentSourcePageType != pageType)
-                {
-                    ContentFrame.Navigate(pageType);
-                }
+                if (ContentFrame.CurrentSourcePageType != pageType) ContentFrame.Navigate(pageType);
             }
         }
 
         private void NavView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
-            if (ContentFrame.CanGoBack)
-            {
-                ContentFrame.GoBack();
-            }
+            if (ContentFrame.CanGoBack) ContentFrame.GoBack();
         }
 
-        // Sự kiện đồng bộ hóa sau khi điều hướng thành công
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
-            // Bật/Tắt nút Back dựa trên lịch sử duyệt trang
             NavView.IsBackEnabled = ContentFrame.CanGoBack;
 
-            // Tự động ẩn Header (Lời chào/Search) khi vào trang xem phim để rộng chỗ
+            if (e.SourcePageType == typeof(AddMoviePage) ||
+                e.SourcePageType == typeof(SettingsPage) ||
+                e.SourcePageType == typeof(MovieDetailsPage))
+            {
+                SearchButton.Visibility = Visibility.Collapsed;
+                SortButton.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SearchButton.Visibility = Visibility.Visible;
+                SortButton.Visibility = Visibility.Visible;
+            }
+
             if (e.SourcePageType.Name.Contains("PlayerPage"))
             {
                 HeaderPanel.Visibility = Visibility.Collapsed;
@@ -108,10 +165,9 @@ namespace MyMovie.Views
             else
             {
                 HeaderPanel.Visibility = Visibility.Visible;
-                UpdateGreeting(); // Cập nhật lại lời chào mỗi khi quay lại trang chính
+                if (HeaderSearchBox.Visibility == Visibility.Visible) CloseSearchButton_Click(null!, null!);
+                UpdateGreeting();
             }
         }
-
-        #endregion
     }
 }

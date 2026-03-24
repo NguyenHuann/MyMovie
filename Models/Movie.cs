@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace MyMovie.Models
 {
@@ -24,8 +25,25 @@ namespace MyMovie.Models
         public string? ThumbnailPath { get; set; }
         public DateTime DateAdded { get; set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+        private bool _isFavorite = false;
+        public bool IsFavorite
+        {
+            get => _isFavorite;
+            set { _isFavorite = value; OnPropertyChanged(); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    public class SortMessage : ValueChangedMessage<string>
+    {
+        public SortMessage(string value) : base(value) { }
+    }
+
+    public class SearchMessage : ValueChangedMessage<string>
+    {
+        public SearchMessage(string value) : base(value) { }
     }
 }
