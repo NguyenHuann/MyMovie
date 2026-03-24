@@ -87,8 +87,8 @@
                                 CornerRadius="4"
                                 Tag="{x:Bind}" 
                                 Click="Unfavorite_Click"
-                                ToolTipService.ToolTip="Yêu thích">
-                                        <FontIcon Glyph="&#xEB51;" 
+                                ToolTipService.ToolTip="Bỏ yêu thích">
+                                        <FontIcon Glyph="&#xEB52;" 
                                                   FontSize="16"
                                                   Foreground="{x:Bind IsFavorite, Mode=OneWay, Converter={StaticResource FavoriteColorConverter}}"/>
                                         <Button.Resources>
