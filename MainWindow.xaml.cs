@@ -26,7 +26,7 @@ namespace MyMovie
                 }
             }
 
-            // 2. ĐIỀU HƯỚNG TỚI MAINPAGE (Trang "Morning, huan!")
+            // 2. ĐIỀU HƯỚNG TỚI MAINPAGE
             // Điều này giúp MainWindow không bị trống khi vừa mở App
             RootFrame.Navigate(typeof(Views.MainPage));
         }
