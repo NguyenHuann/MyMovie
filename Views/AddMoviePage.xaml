@@ -12,7 +12,7 @@
     </Page.Resources>
 
     <ScrollViewer>
-        <StackPanel Padding="40" Spacing="30" MaxWidth="1200" HorizontalAlignment="Center">
+        <StackPanel Padding="0" Spacing="10" MaxWidth="1200" HorizontalAlignment="Center">
 
             <StackPanel Spacing="5" HorizontalAlignment="Left">
                 <TextBlock x:Name="PageTitle" Text="Thêm phim mới" FontSize="32" FontWeight="Bold"/>
