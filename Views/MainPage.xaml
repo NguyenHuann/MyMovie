@@ -2,9 +2,6 @@
     x:Class="MyMovie.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
@@ -21,13 +18,11 @@
                         <FontIcon Glyph="&#xE80F;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
                 <NavigationViewItem Content="Yêu thích" Tag="favorites">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEB51;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
                 <NavigationViewItem Content="Lịch sử" Tag="history">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;"/>
@@ -49,65 +44,33 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <RelativePanel x:Name="HeaderPanel" Grid.Row="0" Margin="0,0,0,30">
-                    <TextBlock x:Name="GreetingText" 
-                               Text="đang tải..." 
-                               FontSize="28"
-                               FontWeight="SemiBold"
-                               Style="{StaticResource TitleLargeTextBlockStyle}"/>
+                <Grid x:Name="HeaderPanel" Grid.Row="0" Margin="0,0,0,30">
+                    <TextBlock x:Name="GreetingText" Text="đang tải..." FontSize="28" FontWeight="SemiBold" VerticalAlignment="Center"/>
 
-                    <StackPanel Orientation="Horizontal" 
-                                RelativePanel.AlignRightWithPanel="True" 
-                                Spacing="10">
-
-                        <Button x:Name="ThemeButton" 
-                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
-                                ToolTipService.ToolTip="Đổi giao diện (Sáng/Tối)"
-                                Click="ThemeButton_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                        <Button x:Name="ThemeButton" Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Đổi giao diện (Sáng/Tối)" Click="ThemeButton_Click">
                             <FontIcon x:Name="ThemeIcon" Glyph="&#xE706;" FontSize="16"/>
                         </Button>
-
-                        <Button x:Name="SearchButton" 
-                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
-                                ToolTipService.ToolTip="Tìm kiếm"
-                                Click="SearchButton_Click">
+                        <Button x:Name="SearchButton" Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Tìm kiếm" Click="SearchButton_Click">
                             <FontIcon Glyph="&#xE721;" FontSize="16"/>
                         </Button>
-
-                        <Button x:Name="SortButton" 
-                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
-                                ToolTipService.ToolTip="Sắp xếp"
-                                Click="SortButton_Click">
+                        <Button x:Name="SortButton" Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Sắp xếp" Click="SortButton_Click">
                             <FontIcon Glyph="&#xE8CB;" FontSize="16"/>
                         </Button>
 
-                        <AutoSuggestBox x:Name="HeaderSearchBox" 
-                                        PlaceholderText="Tìm kiếm phim..." 
-                                        
-                                        QueryIcon="Find" 
-                                        Width="300" 
-                                        VerticalAlignment="Center"
-                                        Visibility="Visible" 
-                                        TextChanged="HeaderSearchBox_TextChanged">
+                        <AutoSuggestBox x:Name="HeaderSearchBox" PlaceholderText="Tìm kiếm phim..." QueryIcon="Find" Width="300" VerticalAlignment="Center" Visibility="Collapsed" TextChanged="HeaderSearchBox_TextChanged">
                             <AutoSuggestBox.Resources>
-                                <SolidColorBrush x:Key="TextControlPlaceholderForeground"
-                         Color="#FF888888"/>
+                                <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF888888"/>
                             </AutoSuggestBox.Resources>
                         </AutoSuggestBox>
 
-                        <Button x:Name="CloseSearchButton" 
-                                Width="40" Height="40" CornerRadius="20" Background="Transparent" 
-                                ToolTipService.ToolTip="Đóng tìm kiếm"
-                                Click="CloseSearchButton_Click" 
-                                Visibility="Collapsed">
+                        <Button x:Name="CloseSearchButton" Width="40" Height="40" CornerRadius="20" Background="Transparent" ToolTipService.ToolTip="Đóng tìm kiếm" Click="CloseSearchButton_Click" Visibility="Collapsed">
                             <FontIcon Glyph="&#xE711;" FontSize="12" />
                         </Button>
                     </StackPanel>
-                </RelativePanel>
+                </Grid>
 
-                <Frame x:Name="ContentFrame" 
-                       Grid.Row="1" 
-                       Navigated="ContentFrame_Navigated"/>
+                <Frame x:Name="ContentFrame" Grid.Row="1" Navigated="ContentFrame_Navigated"/>
             </Grid>
         </NavigationView>
     </Grid>

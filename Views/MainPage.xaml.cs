@@ -106,20 +106,35 @@ namespace MyMovie.Views
             ThemeButton.Visibility = Visibility.Visible; // Hiện lại nút Theme
             SearchButton.Visibility = Visibility.Visible;
             SortButton.Visibility = Visibility.Visible;
+
+            // PHÁT SÓNG TÍN HIỆU: Reset lại danh sách phim khi đóng thanh tìm kiếm
+            WeakReferenceMessenger.Default.Send(new SearchMessage(""));
         }
 
         private void HeaderSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                var keyword = sender.Text.ToLower();
-                // (Phần này sẽ dùng WeakReferenceMessenger để gửi từ khóa sang HomePage)
+                // PHÁT SÓNG TÍN HIỆU: Gửi từ khóa người dùng gõ xuống HomePage
+                WeakReferenceMessenger.Default.Send(new SearchMessage(sender.Text.ToLower()));
             }
         }
 
         private void SortButton_Click(object sender, RoutedEventArgs e)
         {
-            // Logic Sắp xếp
+            // Tạo Menu thả xuống cho nút Sắp xếp
+            var flyout = new MenuFlyout();
+
+            var sortByNameAsc = new MenuFlyoutItem { Text = "Tên phim (A đến Z)", Icon = new FontIcon { Glyph = "\xE74B" } };
+            sortByNameAsc.Click += (s, args) => WeakReferenceMessenger.Default.Send(new SortMessage("NameAsc"));
+
+            var sortByNameDesc = new MenuFlyoutItem { Text = "Tên phim (Z đến A)", Icon = new FontIcon { Glyph = "\xE74A" } };
+            sortByNameDesc.Click += (s, args) => WeakReferenceMessenger.Default.Send(new SortMessage("NameDesc"));
+
+            flyout.Items.Add(sortByNameAsc);
+            flyout.Items.Add(sortByNameDesc);
+
+            flyout.ShowAt((FrameworkElement)sender);
         }
 
         #endregion
@@ -185,6 +200,20 @@ namespace MyMovie.Views
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
             NavView.IsBackEnabled = ContentFrame.CanGoBack;
+
+            // Ẩn các nút Tìm kiếm/Sắp xếp khi vào các trang phụ để tránh lỗi
+            if (e.SourcePageType == typeof(AddMoviePage) ||
+                e.SourcePageType == typeof(SettingsPage) ||
+                e.SourcePageType == typeof(MovieDetailsPage))
+            {
+                SearchButton.Visibility = Visibility.Collapsed;
+                SortButton.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SearchButton.Visibility = Visibility.Visible;
+                SortButton.Visibility = Visibility.Visible;
+            }
 
             if (e.SourcePageType.Name.Contains("PlayerPage"))
             {

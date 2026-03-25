@@ -36,7 +36,7 @@ namespace MyMovie
                 {
                     "Dark" => ElementTheme.Dark,
                     "Light" => ElementTheme.Light,
-
+                    _ => ElementTheme.Default // Thêm dòng này để xử lý trường hợp null hoặc không xác định
                 };
             }
 

@@ -1,27 +1,146 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.VisualBasic;
 using MyMovie.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging; // 1. Bổ sung thư viện nhận tín hiệu
+
 namespace MyMovie.Views
 {
     public sealed partial class HomePage : Page
     {
+        // Danh sách hiển thị trên giao diện
         public ObservableCollection<Movie> Movies { get; } = new();
+
+        // Danh sách gốc lưu trong bộ nhớ để lọc và tìm kiếm không bị mất bài
+        private List<Movie> _fullMovieList = new List<Movie>();
 
         public HomePage()
         {
             this.InitializeComponent();
             InitializeGenrePivot();
-            this.Loaded += async (s, e) =>  LoadMoviesFromDb();
+
+            this.Loaded += (s, e) => LoadMoviesFromDb();
+
+            // 2. Lắng nghe tín hiệu Tìm kiếm từ MainPage
+            WeakReferenceMessenger.Default.Register<SearchMessage>(this, (r, m) =>
+            {
+                SearchMovies(m.Value);
+            });
+
+            // 3. Lắng nghe tín hiệu Sắp xếp từ MainPage
+            WeakReferenceMessenger.Default.Register<SortMessage>(this, (r, m) =>
+            {
+                SortMovies(m.Value);
+            });
         }
 
-        
+        private async void LoadMoviesFromDb()
+        {
+            using var db = new MyMovie.Data.AddDbContext();
+            var list = await db.Movies.OrderByDescending(m => m.DateAdded).ToListAsync();
+
+            _fullMovieList = list; // Lưu vào danh sách gốc
+            ApplyCurrentFilter();  // Áp dụng bộ lọc hiện tại để hiển thị
+        }
+
+        #region Logic Tìm kiếm, Sắp xếp & Lọc Thể loại
+
+        // Hàm xử lý khi có tín hiệu Tìm kiếm
+        private void SearchMovies(string keyword)
+        {
+            if (_fullMovieList == null || !_fullMovieList.Any()) return;
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                ApplyCurrentFilter(); // Rỗng thì trả về danh sách theo Tab hiện tại
+            }
+            else
+            {
+                // Lọc trực tiếp từ danh sách gốc
+                var searchResult = _fullMovieList
+                    .Where(m => m.Title != null && m.Title.ToLower().Contains(keyword.ToLower()))
+                    .ToList();
+                UpdateUIList(searchResult);
+            }
+        }
+
+        // Hàm xử lý khi có tín hiệu Sắp xếp
+        private void SortMovies(string sortType)
+        {
+            if (_fullMovieList == null || !_fullMovieList.Any()) return;
+
+            switch (sortType)
+            {
+                case "NameAsc":
+                    _fullMovieList = _fullMovieList.OrderBy(m => m.Title).ToList();
+                    break;
+                case "NameDesc":
+                    _fullMovieList = _fullMovieList.OrderByDescending(m => m.Title).ToList();
+                    break;
+            }
+            ApplyCurrentFilter(); // Sắp xếp xong thì hiển thị lại theo Tab hiện tại
+        }
+
+        // Hàm xác định Tab thể loại đang chọn để hiển thị đúng phim
+        private void ApplyCurrentFilter()
+        {
+            string currentFilter = "All";
+            if (GenreFilterPivot.SelectedItem is PivotItem selectedTab)
+            {
+                currentFilter = selectedTab.Tag?.ToString() ?? "All";
+            }
+
+            List<Movie> displayList = currentFilter == "All"
+                ? _fullMovieList
+                : _fullMovieList.Where(m => m.Genre == currentFilter).ToList();
+
+            UpdateUIList(displayList);
+        }
+
+        // Hàm đẩy dữ liệu lên màn hình và kiểm tra trạng thái Rỗng
+        private void UpdateUIList(List<Movie> listToShow)
+        {
+            Movies.Clear();
+            foreach (var movie in listToShow)
+            {
+                Movies.Add(movie);
+            }
+
+            EmptyState.Visibility = Movies.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
+            MovieGrid.Visibility = Movies.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // Khởi tạo thanh Thể loại
+        private void InitializeGenrePivot()
+        {
+            GenreFilterPivot.Items.Clear();
+
+            var allItem = new PivotItem { Header = "Tất cả", Tag = "All", Content = new Grid() };
+            GenreFilterPivot.Items.Add(allItem);
+
+            foreach (var genre in MyMovie.Data.Constants.AllGenres)
+            {
+                var genreItem = new PivotItem { Header = genre, Tag = genre, Content = new Grid() };
+                GenreFilterPivot.Items.Add(genreItem);
+            }
+
+            GenreFilterPivot.SelectedIndex = 0;
+        }
+
+        // Khi bấm đổi Tab Thể loại
+        private void GenreFilterPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyCurrentFilter();
+        }
+
+        #endregion
+
+        #region Xử lý nút chức năng & Hiệu ứng thẻ phim
 
         private void AddMovie_Click(object sender, RoutedEventArgs e)
         {
@@ -36,17 +155,12 @@ namespace MyMovie.Views
             }
         }
 
-        #region Xử lý Di chuột & Nút chức năng thẻ phim
-
         private void MovieItem_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             if (sender is Grid rootGrid)
             {
                 var overlay = FindChildByName<Border>(rootGrid, "HoverOverlay");
-                if (overlay != null)
-                {
-                    overlay.Opacity = 1;
-                }
+                if (overlay != null) overlay.Opacity = 1;
             }
         }
 
@@ -55,10 +169,7 @@ namespace MyMovie.Views
             if (sender is Grid rootGrid)
             {
                 var overlay = FindChildByName<Border>(rootGrid, "HoverOverlay");
-                if (overlay != null)
-                {
-                    overlay.Opacity = 0;
-                }
+                if (overlay != null) overlay.Opacity = 0;
             }
         }
 
@@ -66,15 +177,11 @@ namespace MyMovie.Views
         {
             if (sender is Button btn && btn.Tag is Movie movie)
             {
-                // Đã đổi thành AddDbContext
                 using var db = new MyMovie.Data.AddDbContext();
-
-                // Đổi trạng thái yêu thích
                 movie.IsFavorite = !movie.IsFavorite;
                 db.Movies.Update(movie);
                 await db.SaveChangesAsync();
 
-               
                 if (btn.Content is FontIcon icon)
                 {
                     if (movie.IsFavorite)
@@ -109,6 +216,7 @@ namespace MyMovie.Views
                 if (result == ContentDialogResult.Primary)
                 {
                     Movies.Remove(movie);
+                    _fullMovieList.Remove(movie); // Xóa khỏi danh sách gốc để tìm kiếm không bị lỗi
 
                     if (!Movies.Any())
                     {
@@ -116,7 +224,6 @@ namespace MyMovie.Views
                         MovieGrid.Visibility = Visibility.Collapsed;
                     }
 
-                    // Đã đổi thành AddDbContext
                     using var db = new MyMovie.Data.AddDbContext();
                     db.Movies.Remove(movie);
                     await db.SaveChangesAsync();
@@ -142,95 +249,5 @@ namespace MyMovie.Views
         }
 
         #endregion
-
-        private List<Movie> _fullMovieList = new List<Movie>();
-        public ObservableCollection<Movie> Movie { get; } = new ObservableCollection<Movie>();
-
-
-
-
-
-        private bool _isPivotInitialized = false;
-        //Hàm khởi tạo thanh lọc thể loại
-        private void InitializeGenrePivot()
-        {
-            // 1. Xóa sạch để tránh bị nhân bản Tab khi chuyển trang
-            GenreFilterPivot.Items.Clear();
-
-            // 2. Thêm "Tất cả" vào vị trí số 0
-            var allItem = new PivotItem
-            {
-                Header = "Tất cả",
-                Tag = "All",
-                Content = new Grid() // Tạo nội dung trống để tách biệt các Tab
-            };
-            GenreFilterPivot.Items.Add(allItem);
-
-            // 3. Duyệt danh sách thể loại từ Constants
-            foreach (var genre in MyMovie.Data.Constants.AllGenres)
-            {
-                var genreItem = new PivotItem
-                {
-                    Header = genre,
-                    Tag = genre,
-                    Content = new Grid()
-                };
-                GenreFilterPivot.Items.Add(genreItem);
-            }
-
-            // 4. Cố định: Luôn bắt đầu từ mục đầu tiên
-            GenreFilterPivot.SelectedIndex = 0;
-        }
-
-        //Hàm thay đổi thể loại, logic hiển thị
-        private void GenreFilterPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (GenreFilterPivot.SelectedItem is PivotItem selectedTab)
-            {
-                string filter = selectedTab.Tag?.ToString();
-
-                List<Movie> filteredList;
-                Movies.Clear();
-
-                if (filter == "All")
-                {
-                    filteredList = _fullMovieList; // Hiện tất cả
-                }
-                else
-                {
-                    // Lọc chính xác theo chuỗi (Vì cả 2 bên đều dùng chung Constants)
-                    filteredList = _fullMovieList.Where(m => m.Genre == filter).ToList();
-                }
-
-                foreach (var movie in filteredList)
-                {
-                    Movies.Add(movie);
-                }
-
-                // Xử lý hiện/ẩn thông báo trống
-                EmptyState.Visibility = Movies.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
-            }
-        }
-        private async void LoadMoviesFromDb()
-        {
-            using var db = new MyMovie.Data.AddDbContext();
-            var list = await db.Movies.OrderByDescending(m => m.DateAdded).ToListAsync();
-            _fullMovieList = list;
-            Movies.Clear();
-            foreach (var movie in list)
-            {
-                Movies.Add(movie);
-            }
-            if (Movies.Count > 0)
-            {
-                // Nếu có phim thì ẨN thông báo trống đi
-                EmptyState.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // Nếu không có phim thì mới HIỆN thông báo trống
-                EmptyState.Visibility = Visibility.Visible;
-            }
-        }
     }
 }
