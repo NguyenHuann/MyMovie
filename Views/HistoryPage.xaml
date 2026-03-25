@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid Padding="20">
+    <Grid Padding="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -25,7 +25,7 @@
                     HorizontalAlignment="Center"
                     Visibility="Collapsed" 
                     Spacing="15">
-            <FontIcon Glyph="&#xEB51;" FontSize="80" Opacity="0.2"/>
+            <FontIcon Glyph="&#xE823;" FontSize="80" Opacity="0.2"/>
             <TextBlock Text="Bạn chưa xem bộ phim nào" 
                        FontSize="16" Opacity="0.5"/>
         </StackPanel>
@@ -65,7 +65,7 @@
                         <Border x:Name="HoverOverlay" CornerRadius="12" Background="#44000000" Opacity="0">
                             <Button HorizontalAlignment="Right" VerticalAlignment="Top" 
                                     Margin="8" Width="36" Height="36"
-                                    Tag="{x:Bind}" Click="Unfavorite_Click"
+                                    Tag="{x:Bind}" Click="Remove_Click"
                                     Style="{StaticResource DefaultButtonStyle}">
                                 <FontIcon Glyph="&#xE74D;" FontSize="14" Foreground="White"/>
                             </Button>

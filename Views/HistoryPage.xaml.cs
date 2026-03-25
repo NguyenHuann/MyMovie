@@ -38,7 +38,7 @@ namespace MyMovie.Views
         }
 
         // Handler cho nút xóa khỏi lịch sử (Icon thùng rác)
-        private void Unfavorite_Click(object sender, RoutedEventArgs e)
+        private void Remove_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is Movie movie)
             {
