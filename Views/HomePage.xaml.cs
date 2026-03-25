@@ -1,37 +1,54 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.VisualBasic;
 using MyMovie.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
+
 namespace MyMovie.Views
 {
     public sealed partial class HomePage : Page
     {
+        // Danh sách phim hiển thị trên giao diện
         public ObservableCollection<Movie> Movies { get; } = new();
+
+        // Danh sách gốc dùng để lọc thể loại
+        private List<Movie> _fullMovieList = new List<Movie>();
 
         public HomePage()
         {
             this.InitializeComponent();
+
+            // Đảm bảo trang luôn được tải mới khi quay lại (tránh lỗi cache lịch sử)
+            this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Disabled;
+
             InitializeGenrePivot();
-            this.Loaded += async (s, e) =>  LoadMoviesFromDb();
+            this.Loaded += async (s, e) => await LoadMoviesFromDb();
         }
 
-        
-
-        private void AddMovie_Click(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(AddMoviePage));
-        }
-
+        /// <summary>
+        /// Logic xử lý khi nhấn vào một bộ phim: Lưu vào lịch sử và chuyển trang
+        /// </summary>
         private void MovieGrid_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is Movie clickedMovie)
             {
+                // 1. Kiểm tra trùng lặp trong kho lưu trữ chung App.GlobalHistory
+                var existing = App.GlobalHistory.FirstOrDefault(m => m.Id == clickedMovie.Id);
+
+                if (existing != null)
+                {
+                    // Nếu đã xem rồi thì xóa bản cũ đi để đưa lên đầu danh sách
+                    App.GlobalHistory.Remove(existing);
+                }
+
+                // 2. Chèn phim vào vị trí đầu tiên (vị trí 0)
+                App.GlobalHistory.Insert(0, clickedMovie);
+
+                // 3. Chuyển sang trang xem chi tiết phim
                 Frame.Navigate(typeof(MovieDetailsPage), clickedMovie);
             }
         }
@@ -43,10 +60,7 @@ namespace MyMovie.Views
             if (sender is Grid rootGrid)
             {
                 var overlay = FindChildByName<Border>(rootGrid, "HoverOverlay");
-                if (overlay != null)
-                {
-                    overlay.Opacity = 1;
-                }
+                if (overlay != null) overlay.Opacity = 1;
             }
         }
 
@@ -55,10 +69,7 @@ namespace MyMovie.Views
             if (sender is Grid rootGrid)
             {
                 var overlay = FindChildByName<Border>(rootGrid, "HoverOverlay");
-                if (overlay != null)
-                {
-                    overlay.Opacity = 0;
-                }
+                if (overlay != null) overlay.Opacity = 0;
             }
         }
 
@@ -66,15 +77,13 @@ namespace MyMovie.Views
         {
             if (sender is Button btn && btn.Tag is Movie movie)
             {
-                // Đã đổi thành AddDbContext
                 using var db = new MyMovie.Data.AddDbContext();
 
-                // Đổi trạng thái yêu thích
+                // Đảo trạng thái yêu thích
                 movie.IsFavorite = !movie.IsFavorite;
                 db.Movies.Update(movie);
                 await db.SaveChangesAsync();
 
-               
                 if (btn.Content is FontIcon icon)
                 {
                     if (movie.IsFavorite)
@@ -109,14 +118,13 @@ namespace MyMovie.Views
                 if (result == ContentDialogResult.Primary)
                 {
                     Movies.Remove(movie);
+                    _fullMovieList.Remove(movie);
 
                     if (!Movies.Any())
                     {
                         EmptyState.Visibility = Visibility.Visible;
-                        MovieGrid.Visibility = Visibility.Collapsed;
                     }
 
-                    // Đã đổi thành AddDbContext
                     using var db = new MyMovie.Data.AddDbContext();
                     db.Movies.Remove(movie);
                     await db.SaveChangesAsync();
@@ -130,10 +138,7 @@ namespace MyMovie.Views
             for (int i = 0; i < count; i++)
             {
                 var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
-                if (child is FrameworkElement fe && fe.Name == childName && child is T tChild)
-                {
-                    return tChild;
-                }
+                if (child is FrameworkElement fe && fe.Name == childName && child is T tChild) return tChild;
 
                 var result = FindChildByName<T>(child, childName);
                 if (result != null) return result;
@@ -143,94 +148,54 @@ namespace MyMovie.Views
 
         #endregion
 
-        private List<Movie> _fullMovieList = new List<Movie>();
-        public ObservableCollection<Movie> Movie { get; } = new ObservableCollection<Movie>();
-
-
-
-
-
-        private bool _isPivotInitialized = false;
-        //Hàm khởi tạo thanh lọc thể loại
         private void InitializeGenrePivot()
         {
-            // 1. Xóa sạch để tránh bị nhân bản Tab khi chuyển trang
             GenreFilterPivot.Items.Clear();
-
-            // 2. Thêm "Tất cả" vào vị trí số 0
-            var allItem = new PivotItem
-            {
-                Header = "Tất cả",
-                Tag = "All",
-                Content = new Grid() // Tạo nội dung trống để tách biệt các Tab
-            };
+            var allItem = new PivotItem { Header = "Tất cả", Tag = "All", Content = new Grid() };
             GenreFilterPivot.Items.Add(allItem);
 
-            // 3. Duyệt danh sách thể loại từ Constants
             foreach (var genre in MyMovie.Data.Constants.AllGenres)
             {
-                var genreItem = new PivotItem
-                {
-                    Header = genre,
-                    Tag = genre,
-                    Content = new Grid()
-                };
-                GenreFilterPivot.Items.Add(genreItem);
+                GenreFilterPivot.Items.Add(new PivotItem { Header = genre, Tag = genre, Content = new Grid() });
             }
-
-            // 4. Cố định: Luôn bắt đầu từ mục đầu tiên
             GenreFilterPivot.SelectedIndex = 0;
         }
 
-        //Hàm thay đổi thể loại, logic hiển thị
         private void GenreFilterPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (GenreFilterPivot.SelectedItem is PivotItem selectedTab)
             {
                 string filter = selectedTab.Tag?.ToString();
-
-                List<Movie> filteredList;
                 Movies.Clear();
 
-                if (filter == "All")
-                {
-                    filteredList = _fullMovieList; // Hiện tất cả
-                }
-                else
-                {
-                    // Lọc chính xác theo chuỗi (Vì cả 2 bên đều dùng chung Constants)
-                    filteredList = _fullMovieList.Where(m => m.Genre == filter).ToList();
-                }
+                var filteredList = (filter == "All")
+                    ? _fullMovieList
+                    : _fullMovieList.Where(m => m.Genre == filter).ToList();
 
-                foreach (var movie in filteredList)
-                {
-                    Movies.Add(movie);
-                }
-
-                // Xử lý hiện/ẩn thông báo trống
+                foreach (var movie in filteredList) Movies.Add(movie);
                 EmptyState.Visibility = Movies.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
             }
         }
-        private async void LoadMoviesFromDb()
+
+        private async Task LoadMoviesFromDb()
         {
-            using var db = new MyMovie.Data.AddDbContext();
-            var list = await db.Movies.OrderByDescending(m => m.DateAdded).ToListAsync();
-            _fullMovieList = list;
-            Movies.Clear();
-            foreach (var movie in list)
+            try
             {
-                Movies.Add(movie);
+                using var db = new MyMovie.Data.AddDbContext();
+                var list = await db.Movies.OrderByDescending(m => m.DateAdded).ToListAsync();
+                _fullMovieList = list;
+
+                Movies.Clear();
+                foreach (var movie in list) Movies.Add(movie);
+
+                EmptyState.Visibility = Movies.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
             }
-            if (Movies.Count > 0)
-            {
-                // Nếu có phim thì ẨN thông báo trống đi
-                EmptyState.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // Nếu không có phim thì mới HIỆN thông báo trống
-                EmptyState.Visibility = Visibility.Visible;
-            }
+            catch (Exception) { /* Xử lý lỗi DB nếu cần */ }
+        }
+
+        private void AddMovie_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(AddMoviePage));
         }
     }
 }

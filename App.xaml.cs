@@ -2,11 +2,15 @@
 using Microsoft.UI.Xaml.Controls;
 using System;
 using Windows.Storage;
+using System.Collections.ObjectModel;
+using MyMovie.Models;
+using MyMovie.Data; // dùng để gọi HistoryManager 
 
 namespace MyMovie
 {
     public partial class App : Application
     {
+        public static ObservableCollection<Movie> GlobalHistory { get; } = new ObservableCollection<Movie>();
         public static Window? m_window;
 
         public App()
@@ -21,7 +25,7 @@ namespace MyMovie
             {
                 db.Database.EnsureCreated();
             }
-
+            HistoryManager.LoadHistory();// tải lịch sử khi mở app
             // 2. PHẢI dùng MainWindow (nơi bạn viết code đặt Icon)
             m_window = new MainWindow();
 
@@ -36,6 +40,7 @@ namespace MyMovie
                 {
                     "Dark" => ElementTheme.Dark,
                     "Light" => ElementTheme.Light,
+                    _ => ElementTheme.Default // Thêm dòng này vào nè ông
 
                 };
             }
