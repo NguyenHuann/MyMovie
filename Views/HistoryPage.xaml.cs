@@ -1,4 +1,3 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -6,76 +5,79 @@ using Microsoft.UI.Xaml.Media;
 using MyMovie.Models;
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace MyMovie.Views
 {
     public sealed partial class HistoryPage : Page
     {
-        // Thuộc tính kết nối với danh sách Global
-        public ObservableCollection<Movie> HistoryMovies => App.GlobalHistory;
+        // Sửa tên thành 'Movies' để khớp chính xác với {x:Bind Movies} trong XAML
+        public ObservableCollection<Movie> Movies => App.GlobalHistory;
 
         public HistoryPage()
         {
             this.InitializeComponent();
+            // Kiểm tra hiển thị trạng thái trống
+            UpdateEmptyState();
+            Movies.CollectionChanged += (s, e) => UpdateEmptyState();
         }
 
-        /// <summary>
-        /// Xử lý khi nhấn vào một bộ phim trong lịch sử
-        /// </summary>
+        private void UpdateEmptyState()
+        {
+            EmptyState.Visibility = (Movies == null || Movies.Count == 0)
+                                    ? Visibility.Visible
+                                    : Visibility.Collapsed;
+        }
+
         private void MovieGrid_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is Movie selectedMovie)
             {
-                // Điều hướng quay lại trang chi tiết phim hoặc trang phát phim
-                // Ví dụ: Frame.Navigate(typeof(MovieDetailsPage), selectedMovie);
+                // Logic điều hướng xem phim
             }
         }
 
-        /// <summary>
-        /// Xóa sạch danh sách lịch sử
-        /// </summary>
-        private async void ClearHistory_Click(object sender, RoutedEventArgs e)
+        // Handler cho nút "Bỏ yêu thích" (Icon trái tim)
+        private void Unfavorite_Click(object sender, RoutedEventArgs e)
         {
-            // Hiển thị hộp thoại xác nhận (ContentDialog)
-            ContentDialog confirmDialog = new ContentDialog
+            if (sender is Button btn && btn.Tag is Movie movie)
             {
-                Title = "Xác nhận xóa",
-                Content = "Bạn có chắc chắn muốn xóa toàn bộ lịch sử xem phim không?",
-                PrimaryButtonText = "Xóa hết",
-                CloseButtonText = "Hủy",
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = this.XamlRoot // Quan trọng trong WinUI 3
-            };
-
-            ContentDialogResult result = await confirmDialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary)
-            {
-                App.GlobalHistory.Clear();
-                // LƯU Ý: Đừng quên gọi hàm HistoryManager.SaveHistory() tại đây nếu bạn có lưu vào file JSON
-                // Ví dụ: HistoryManager.SaveHistory();
+                App.GlobalHistory.Remove(movie);
+                // Lưu lại file nếu cần: HistoryManager.SaveHistory();
             }
         }
 
-        // Xử lý khi di chuột vào thẻ
-        private void MovieCard_PointerEntered(object sender, PointerRoutedEventArgs e)
+        // Hiệu ứng Hover cho Item
+        private void MovieItem_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Border border)
+            if (sender is Grid container)
             {
-                // Đổi màu nền sang xám nhạt đồng bộ và sạch sẽ khi di chuột vào (hover)
-                border.Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray);
+                // Tìm Border có tên HoverOverlay trong DataTemplate
+                var overlay = FindControlByName<Border>(container, "HoverOverlay");
+                if (overlay != null) overlay.Opacity = 1;
             }
         }
 
-        // Xử lý khi di chuột ra khỏi thẻ
-        private void MovieCard_PointerExited(object sender, PointerRoutedEventArgs e)
+        private void MovieItem_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Border border)
+            if (sender is Grid container)
             {
-                // Trả lại nền trong suốt sạch sẽ khi chuột đi ra ngoài
-                border.Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+                var overlay = FindControlByName<Border>(container, "HoverOverlay");
+                if (overlay != null) overlay.Opacity = 0;
             }
+        }
+
+        // Hàm phụ trợ để tìm control bên trong DataTemplate
+        private T FindControlByName<T>(DependencyObject parent, string name) where T : FrameworkElement
+        {
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T element && element.Name == name) return element;
+                var result = FindControlByName<T>(child, name);
+                if (result != null) return result;
+            }
+            return null;
         }
     }
 }
