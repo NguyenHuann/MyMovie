@@ -10,13 +10,14 @@ namespace MyMovie.Views
 {
     public sealed partial class HistoryPage : Page
     {
-        // Sửa tên thành 'Movies' để khớp chính xác với {x:Bind Movies} trong XAML
+        // Liên kết dữ liệu hiển thị với biến toàn cục
         public ObservableCollection<Movie> Movies => App.GlobalHistory;
 
         public HistoryPage()
         {
             this.InitializeComponent();
-            // Kiểm tra hiển thị trạng thái trống
+
+            // Cập nhật trạng thái "Trống" khi mở trang và khi danh sách thay đổi
             UpdateEmptyState();
             Movies.CollectionChanged += (s, e) => UpdateEmptyState();
         }
@@ -32,26 +33,28 @@ namespace MyMovie.Views
         {
             if (e.ClickedItem is Movie selectedMovie)
             {
-                // Logic điều hướng xem phim
+                // Sau này sẽ thêm lệnh chuyển sang trang Chi tiết phim (MovieDetailsPage)
             }
         }
 
-        // Handler cho nút "Bỏ yêu thích" (Icon trái tim)
+        // Handler cho nút xóa khỏi lịch sử (Icon thùng rác)
         private void Unfavorite_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is Movie movie)
             {
+                // 1. Xóa khỏi danh sách hiển thị
                 App.GlobalHistory.Remove(movie);
-                // Lưu lại file nếu cần: HistoryManager.SaveHistory();
+
+                // 2. Lưu lại thay đổi vào file JSON ngay lập tức
+                MyMovie.Data.HistoryManager.SaveHistory();
             }
         }
 
-        // Hiệu ứng Hover cho Item
+        // --- CÁC HÀM XỬ LÝ GIAO DIỆN (HOVER) ---
         private void MovieItem_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Grid container)
             {
-                // Tìm Border có tên HoverOverlay trong DataTemplate
                 var overlay = FindControlByName<Border>(container, "HoverOverlay");
                 if (overlay != null) overlay.Opacity = 1;
             }
@@ -67,13 +70,14 @@ namespace MyMovie.Views
         }
 
         // Hàm phụ trợ để tìm control bên trong DataTemplate
-        private T FindControlByName<T>(DependencyObject parent, string name) where T : FrameworkElement
+        private T? FindControlByName<T>(DependencyObject parent, string name) where T : FrameworkElement
         {
             int count = VisualTreeHelper.GetChildrenCount(parent);
             for (int i = 0; i < count; i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
                 if (child is T element && element.Name == name) return element;
+
                 var result = FindControlByName<T>(child, name);
                 if (result != null) return result;
             }

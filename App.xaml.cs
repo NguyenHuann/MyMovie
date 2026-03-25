@@ -1,17 +1,22 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using MyMovie.Data;
+using MyMovie.Models;
 using System;
+using System.Collections.ObjectModel;
 using Windows.Storage;
 
 namespace MyMovie
 {
     public partial class App : Application
     {
+        public static ObservableCollection<Movie> GlobalHistory { get; set; } = new ObservableCollection<Movie>();
         public static Window? m_window;
 
         public App()
         {
             this.InitializeComponent();
+            HistoryManager.LoadHistory();
         }
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
