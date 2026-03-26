@@ -10,14 +10,14 @@
 
   <Identity
     Name="32e5a154-3874-4ad9-b0dd-5ba1ba536880"
-    Publisher="CN=ADMIN"
+    Publisher="CN=huann@"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="32e5a154-3874-4ad9-b0dd-5ba1ba536880" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>MyMovie</DisplayName>
-    <PublisherDisplayName>ADMIN</PublisherDisplayName>
+    <PublisherDisplayName>huann@</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
