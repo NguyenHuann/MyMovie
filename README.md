@@ -27,4 +27,4 @@
 ![Favorite Page](screenshot/3.png)
 ![History Page](screenshot/4.png)
 ![Movie Detail](screenshot/5.png)
-![Movie Player](screenshot/6.png)
+![Movie Player](screenshot/6.jpg)
